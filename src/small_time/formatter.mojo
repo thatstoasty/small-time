@@ -1,17 +1,16 @@
-from collections.vector import InlinedFixedVector
-from utils.static_tuple import StaticTuple
+from collections import InlineList
 from .util import rjust
 from .constants import MONTH_NAMES, MONTH_ABBREVIATIONS, DAY_NAMES, DAY_ABBREVIATIONS
-from .timezone import UTC_TZ
+from .time_zone import UTC_TZ
 
 alias formatter = _Formatter()
 
 
 struct _Formatter:
-    var _sub_chrs: InlinedFixedVector[Int, 128]
+    var _sub_chrs: InlineList[Int, 128]
 
     fn __init__(inout self):
-        self._sub_chrs = InlinedFixedVector[Int, 128](0)
+        self._sub_chrs = InlineList[Int, 128]()
         for i in range(128):
             self._sub_chrs[i] = 0
         self._sub_chrs[_Y] = 4
@@ -27,7 +26,7 @@ struct _Formatter:
         self._sub_chrs[_A] = 1
         self._sub_chrs[_a] = 1
 
-    fn format(self, m: Morrow, fmt: String) -> String:
+    fn format(self, m: SmallTime, fmt: String) -> String:
         """
         "YYYY[abc]MM" -> repalce("YYYY") + "abc" + replace("MM")
         """
@@ -58,7 +57,7 @@ struct _Formatter:
             ret += self.replace(m, fmt[start_idx:])
         return ret
 
-    fn replace(self, m: Morrow, s: String) -> String:
+    fn replace(self, m: SmallTime, s: String) -> String:
         """
         split token and replace
         """
@@ -88,7 +87,7 @@ struct _Formatter:
             ret += self.replace_token(m, match_chr_ord, match_count)
         return ret
 
-    fn replace_token(self, m: Morrow, token: Int, token_count: Int) -> String:
+    fn replace_token(self, m: SmallTime, token: Int, token_count: Int) -> String:
         if token == _Y:
             if token_count == 1:
                 return "Y"
@@ -148,11 +147,11 @@ struct _Formatter:
                 return rjust(m.microsecond, 6, "0")
         elif token == _d:
             if token_count == 1:
-                return str(m.isoweekday())
+                return str(m.iso_weekday())
             if token_count == 3:
-                return String(DAY_ABBREVIATIONS[m.isoweekday()])
+                return String(DAY_ABBREVIATIONS[m.iso_weekday()])
             if token_count == 4:
-                return String(DAY_NAMES[m.isoweekday()])
+                return String(DAY_NAMES[m.iso_weekday()])
         elif token == _Z:
             if token_count == 3:
                 return UTC_TZ.name if m.tz.is_none() else m.tz.name

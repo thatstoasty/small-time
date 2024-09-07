@@ -4,7 +4,7 @@ channels = ["conda-forge", "https://conda.modular.com/max-nightly", "https://con
 description = "A library for playing with colors in Mojo."
 name = "small_time"
 platforms = ["osx-arm64", "linux-64"]
-version = "0.1.1.nightly"
+version = "0.1.0.nightly"
 
 [tasks]
 tests = "bash scripts/tests.sh"

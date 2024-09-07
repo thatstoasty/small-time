@@ -3,6 +3,7 @@ from .util import rjust
 alias SECONDS_OF_DAY = 24 * 3600
 
 
+@register_passable("trivial")
 struct TimeDelta(Stringable):
     var days: Int
     var seconds: Int
@@ -50,11 +51,6 @@ struct TimeDelta(Stringable):
         days_ = self.seconds // SECONDS_OF_DAY
         self.seconds = self.seconds % SECONDS_OF_DAY
         self.days += days_
-
-    fn __copyinit__(inout self, other: Self):
-        self.days = other.days
-        self.seconds = other.seconds
-        self.microseconds = other.microseconds
 
     fn __str__(self) -> String:
         var mm = self.seconds // 60

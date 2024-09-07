@@ -1,4 +1,3 @@
-from utils.static_tuple import StaticTuple
 from collections import InlineArray
 
 # todo: hardcode for tmp
