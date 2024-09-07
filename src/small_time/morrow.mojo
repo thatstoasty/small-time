@@ -1,4 +1,3 @@
-from ._py import py_dt_datetime
 from .util import normalize_timestamp, rjust, _ymd2ord, _days_before_year
 from ._libc import c_gettimeofday, c_localtime, c_gmtime, c_strptime
 from ._libc import CTimeval, CTm
@@ -6,8 +5,7 @@ from .timezone import TimeZone
 from .timedelta import TimeDelta
 from .formatter import formatter
 from .constants import _DAYS_BEFORE_MONTH, _DAYS_IN_MONTH
-from python.object import PythonObject
-from python import Python
+from python import Python, PythonObject
 
 
 alias _DI400Y = 146097  # number of days in 400 years
@@ -36,7 +34,7 @@ struct Morrow(StringableRaising):
         second: Int = 0,
         microsecond: Int = 0,
         tz: TimeZone = TimeZone.none(),
-    ) raises:
+    ):
         self.year = year
         self.month = month
         self.day = day
@@ -47,17 +45,17 @@ struct Morrow(StringableRaising):
         self.tz = tz
 
     @staticmethod
-    fn now() raises -> Self:
+    fn now() -> Self:
         var t = c_gettimeofday()
         return Self._fromtimestamp(t, False)
 
     @staticmethod
-    fn utcnow() raises -> Self:
+    fn utcnow() -> Self:
         var t = c_gettimeofday()
         return Self._fromtimestamp(t, True)
 
     @staticmethod
-    fn _fromtimestamp(t: CTimeval, utc: Bool) raises -> Self:
+    fn _fromtimestamp(t: CTimeval, utc: Bool) -> Self:
         var tm: CTm
         var tz: TimeZone
         if utc:
@@ -92,9 +90,7 @@ struct Morrow(StringableRaising):
         return Self._fromtimestamp(t, True)
 
     @staticmethod
-    fn strptime(
-        date_str: String, fmt: String, tzinfo: TimeZone = TimeZone.none()
-    ) raises -> Self:
+    fn strptime(date_str: String, fmt: String, tzinfo: TimeZone = TimeZone.none()) -> Self:
         """
         Create a Morrow instance from a date string and format,
         in the style of ``datetime.strptime``.  Optionally replaces the parsed TimeZone.
@@ -130,7 +126,7 @@ struct Morrow(StringableRaising):
         var tzinfo = TimeZone.from_utc(tz_str)
         return Self.strptime(date_str, fmt, tzinfo)
 
-    fn format(self, fmt: String = "YYYY-MM-DD HH:mm:ss ZZ") raises -> String:
+    fn format(self, fmt: String = "YYYY-MM-DD HH:mm:ss ZZ") -> String:
         """Returns a string representation of the `Morrow`
         formatted according to the provided format string.
 
@@ -150,9 +146,7 @@ struct Morrow(StringableRaising):
         """
         return formatter.format(self, fmt)
 
-    fn isoformat(
-        self, sep: String = "T", timespec: StringLiteral = "auto"
-    ) raises -> String:
+    fn isoformat(self, sep: String = "T", timespec: StringLiteral = "auto") raises -> String:
         """Return the time formatted according to ISO.
 
         The full format looks like 'YYYY-MM-DD HH:MM:SS.mmmmmm'.
@@ -167,13 +161,7 @@ struct Morrow(StringableRaising):
         terms of the time to include. Valid options are 'auto', 'hours',
         'minutes', 'seconds', 'milliseconds' and 'microseconds'.
         """
-        var date_str = (
-            rjust(self.year, 4, "0")
-            + "-"
-            + rjust(self.month, 2, "0")
-            + "-"
-            + rjust(self.day, 2, "0")
-        )
+        var date_str = (rjust(self.year, 4, "0") + "-" + rjust(self.month, 2, "0") + "-" + rjust(self.day, 2, "0"))
         var time_str = String("")
         if timespec == "auto" or timespec == "microseconds":
             time_str = (
@@ -196,13 +184,7 @@ struct Morrow(StringableRaising):
                 + rjust(self.microsecond // 1000, 3, "0")
             )
         elif timespec == "seconds":
-            time_str = (
-                rjust(self.hour, 2, "0")
-                + ":"
-                + rjust(self.minute, 2, "0")
-                + ":"
-                + rjust(self.second, 2, "0")
-            )
+            time_str = rjust(self.hour, 2, "0") + ":" + rjust(self.minute, 2, "0") + ":" + rjust(self.second, 2, "0")
         elif timespec == "minutes":
             time_str = rjust(self.hour, 2, "0") + ":" + rjust(self.minute, 2, "0")
         elif timespec == "hours":
@@ -214,7 +196,7 @@ struct Morrow(StringableRaising):
         else:
             return sep.join(date_str, time_str) + self.tz.format()
 
-    fn toordinal(self) raises -> Int:
+    fn toordinal(self) -> Int:
         """Return proleptic Gregorian ordinal for the year, month and day.
 
         January 1 of year 1 is day 1.  Only the year, month and day values
@@ -223,7 +205,7 @@ struct Morrow(StringableRaising):
         return _ymd2ord(self.year, self.month, self.day)
 
     @staticmethod
-    fn fromordinal(ordinal: Int) raises -> Self:
+    fn fromordinal(ordinal: Int) -> Self:
         """Construct a Morrow from a proleptic Gregorian ordinal.
 
         January 1 of year 1 is day 1.  Only the year, month and day are
@@ -297,7 +279,7 @@ struct Morrow(StringableRaising):
         # start of that month:  we're done!
         return Self(year, month, n + 1)
 
-    fn isoweekday(self) raises -> Int:
+    fn isoweekday(self) -> Int:
         # "Return day of the week, where Monday == 1 ... Sunday == 7."
         # 1-Jan-0001 is a Monday
         return self.toordinal() % 7 or 7
@@ -305,49 +287,10 @@ struct Morrow(StringableRaising):
     fn __str__(self) raises -> String:
         return self.isoformat()
 
-    fn __sub__(self, other: Self) raises -> TimeDelta:
+    fn __sub__(self, other: Self) -> TimeDelta:
         var days1 = self.toordinal()
         var days2 = other.toordinal()
         var secs1 = self.second + self.minute * 60 + self.hour * 3600
         var secs2 = other.second + other.minute * 60 + other.hour * 3600
-        var base = TimeDelta(
-            days1 - days2, secs1 - secs2, self.microsecond - other.microsecond
-        )
+        var base = TimeDelta(days1 - days2, secs1 - secs2, self.microsecond - other.microsecond)
         return base
-
-    fn to_py(self) raises -> PythonObject:
-        # todo: add tz later
-        var dateimte = Python.import_module("datetime")
-        return dateimte.datetime(
-            self.year,
-            self.month,
-            self.day,
-            self.hour,
-            self.minute,
-            self.second,
-            self.microsecond,
-        )
-
-    @staticmethod
-    fn from_py(py_datetime: PythonObject) raises -> Morrow:
-        # Python.is_type not working, use __class__.__name__ instead
-        if py_datetime.__class__.__name__ == "datetime":
-            return Morrow(
-                int(py_datetime.year),
-                int(py_datetime.month),
-                int(py_datetime.day),
-                int(py_datetime.hour),
-                int(py_datetime.minute),
-                int(py_datetime.second),
-                int(py_datetime.second),
-            )
-        elif py_datetime.__class__.__name__ == "date":
-            return Morrow(
-                int(py_datetime.year),
-                int(py_datetime.month),
-                int(py_datetime.day),
-            )
-        else:
-            raise Error(
-                "invalid python object, only support py builtin datetime or date"
-            )

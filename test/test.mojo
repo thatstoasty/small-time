@@ -1,21 +1,9 @@
 from testing import assert_equal, assert_true
 
-from morrow._libc import c_gettimeofday
-from morrow._py import py_dt_datetime, py_time
-from morrow import Morrow
-from morrow import TimeZone
-from morrow import TimeDelta
-
-
-def assert_datetime_equal(dt: Morrow, py_dt: PythonObject):
-    assert_true(
-        dt.year == int(py_dt.year)
-        and dt.month == int(py_dt.month)
-        and dt.hour == int(py_dt.hour)
-        and dt.minute == int(py_dt.minute)
-        and dt.second == int(py_dt.second),
-        "dt: " + str(dt) + " is not equal to py_dt: " + str(py_dt),
-    )
+from small_time._libc import c_gettimeofday
+from small_time import Morrow
+from small_time import TimeZone
+from small_time import TimeDelta
 
 
 def test_now():

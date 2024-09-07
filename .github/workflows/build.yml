@@ -1,41 +1,53 @@
-name: Build and Release
+name: Build all packages
 
-env:
-  PACKAGE_NAME: morrow.mojopkg
-  MORROW_SRC: morrow
-
-on: workflow_dispatch
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        include:
+          - { target: linux-64, os: ubuntu-latest }
+          - { target: osx-arm64, os: macos-14 }
+      fail-fast: false
+
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 5
+
+    defaults:
+      run:
+        shell: bash
 
     steps:
-      - name: Check out repository code
-        uses: actions/checkout@v2
-      - name: Install dependencies
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Install magic
         run: |
-          curl https://get.modular.com | MODULAR_AUTH=${{ secrets.MODULAR_AUTH }} sh - 
-          modular auth ${{ secrets.MODULAR_AUTH }}
-          python3 -m venv ~/max-venv && source ~/max-venv/bin/activate
-          modular install max
-          MAX_PATH=$(modular config max.path) \
-            && python3 -m pip install --find-links $MAX_PATH/wheels max-engine
-          MAX_PATH=$(modular config max.path) \
-            && BASHRC=$( [ -f "$HOME/.bash_profile" ] && echo "$HOME/.bash_profile" || echo "$HOME/.bashrc" ) \
-            && echo 'export MODULAR_HOME="'$HOME'/.modular"' >> "$BASHRC" \
-            && echo 'export PATH="'$MAX_PATH'/bin:$PATH"' >> "$BASHRC" \
-            && source "$BASHRC"
-      - name: Build
+          curl -ssL https://magic.modular.com | bash
+
+      - name: Build package for target platform
+        env:
+          TARGET_PLATFORM: ${{ matrix.target }}
+          PREFIX_API_KEY: ${{ secrets.PREFIX_API_KEY }}
+          CONDA_BLD_PATH: ${{ runner.workspace }}/.rattler
+
         run: |
-          MAX_PATH=$(modular config max.path) \
-            && BASHRC=$( [ -f "$HOME/.bash_profile" ] && echo "$HOME/.bash_profile" || echo "$HOME/.bashrc" ) \
-            && echo 'export MODULAR_HOME="'$HOME'/.modular"' >> "$BASHRC" \
-            && echo 'export PATH="'$MAX_PATH'/bin:$PATH"' >> "$BASHRC" \
-            && source "$BASHRC"
-          mojo package ${{ env.MORROW_SRC }} -o ${{ github.workspace }}/${{ env.PACKAGE_NAME }}
-      - name: Upload package
-        uses: actions/upload-artifact@v3
-        with:
-          name: ${{ env.PACKAGE_NAME }}
-          path: ${{ github.workspace }}/${{ env.PACKAGE_NAME }}
+          source $HOME/.bash_profile
+
+          # Temporary method to fetch the rattler binary.
+          RATTLER_BINARY="rattler-build-aarch64-apple-darwin"
+          if [[ $TARGET_PLATFORM == "linux-64" ]]; then RATTLER_BINARY="rattler-build-x86_64-unknown-linux-musl"; fi
+          curl -SL --progress-bar https://github.com/prefix-dev/rattler-build/releases/latest/download/${RATTLER_BINARY} -o rattler-build
+          chmod +x rattler-build
+
+          # Build and push
+          magic run build --target-platform=$TARGET_PLATFORM
+          magic run publish

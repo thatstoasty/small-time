@@ -27,7 +27,7 @@ struct _Formatter:
         self._sub_chrs[_A] = 1
         self._sub_chrs[_a] = 1
 
-    fn format(self, m: Morrow, fmt: String) raises -> String:
+    fn format(self, m: Morrow, fmt: String) -> String:
         """
         "YYYY[abc]MM" -> repalce("YYYY") + "abc" + replace("MM")
         """
@@ -58,7 +58,7 @@ struct _Formatter:
             ret += self.replace(m, fmt[start_idx:])
         return ret
 
-    fn replace(self, m: Morrow, s: String) raises -> String:
+    fn replace(self, m: Morrow, s: String) -> String:
         """
         split token and replace
         """
@@ -88,7 +88,7 @@ struct _Formatter:
             ret += self.replace_token(m, match_chr_ord, match_count)
         return ret
 
-    fn replace_token(self, m: Morrow, token: Int, token_count: Int) raises -> String:
+    fn replace_token(self, m: Morrow, token: Int, token_count: Int) -> String:
         if token == _Y:
             if token_count == 1:
                 return "Y"
@@ -98,7 +98,7 @@ struct _Formatter:
                 return rjust(m.year, 4, "0")
         elif token == _M:
             if token_count == 1:
-                return String(m.month)
+                return str(m.month)
             if token_count == 2:
                 return rjust(m.month, 2, "0")
             if token_count == 3:
@@ -107,12 +107,12 @@ struct _Formatter:
                 return String(MONTH_NAMES[m.month])
         elif token == _D:
             if token_count == 1:
-                return String(m.day)
+                return str(m.day)
             if token_count == 2:
                 return rjust(m.day, 2, "0")
         elif token == _H:
             if token_count == 1:
-                return String(m.hour)
+                return str(m.hour)
             if token_count == 2:
                 return rjust(m.hour, 2, "0")
         elif token == _h:
@@ -120,22 +120,22 @@ struct _Formatter:
             if m.hour > 12:
                 h_12 -= 12
             if token_count == 1:
-                return String(h_12)
+                return str(h_12)
             if token_count == 2:
                 return rjust(h_12, 2, "0")
         elif token == _m:
             if token_count == 1:
-                return String(m.minute)
+                return str(m.minute)
             if token_count == 2:
                 return rjust(m.minute, 2, "0")
         elif token == _s:
             if token_count == 1:
-                return String(m.second)
+                return str(m.second)
             if token_count == 2:
                 return rjust(m.second, 2, "0")
         elif token == _S:
             if token_count == 1:
-                return String(m.microsecond // 100000)
+                return str(m.microsecond // 100000)
             if token_count == 2:
                 return rjust(m.microsecond // 10000, 2, "0")
             if token_count == 3:
@@ -148,7 +148,7 @@ struct _Formatter:
                 return rjust(m.microsecond, 6, "0")
         elif token == _d:
             if token_count == 1:
-                return String(m.isoweekday())
+                return str(m.isoweekday())
             if token_count == 3:
                 return String(DAY_ABBREVIATIONS[m.isoweekday()])
             if token_count == 4:
