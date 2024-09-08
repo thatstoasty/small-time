@@ -69,7 +69,6 @@ struct TimeDelta(Stringable):
         """Total seconds in the duration."""
         return ((self.days * 86400 + self.seconds) * 10**6 + self.microseconds) / 10**6
 
-    @always_inline
     fn __add__(self, other: Self) -> Self:
         return Self(
             self.days + other.days,
@@ -106,7 +105,6 @@ struct TimeDelta(Stringable):
         else:
             return self
 
-    @always_inline
     fn __mul__(self, other: Int) -> Self:
         return Self(
             self.days * other,
@@ -127,7 +125,6 @@ struct TimeDelta(Stringable):
     fn __eq__(self, other: Self) -> Bool:
         return self.days == other.days and self.seconds == other.seconds and self.microseconds == other.microseconds
 
-    @always_inline
     fn __le__(self, other: Self) -> Bool:
         if self.days < other.days:
             return True
@@ -138,7 +135,6 @@ struct TimeDelta(Stringable):
                 return True
         return False
 
-    @always_inline
     fn __lt__(self, other: Self) -> Bool:
         if self.days < other.days:
             return True

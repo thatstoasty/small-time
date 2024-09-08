@@ -1,56 +1,134 @@
-from collections import InlineList
-from .util import normalize_timestamp, _ymd2ord, _days_before_year
+from collections import InlineList, InlineArray, Optional
 import .c
 import .time_zone
 from .time_delta import TimeDelta
 from .formatter import formatter
-from .constants import _DAYS_BEFORE_MONTH, _DAYS_IN_MONTH
 
 
-alias _DI400Y = 146097  # number of days in 400 years
-alias _DI100Y = 36524  #    "    "   "   " 100   "
-alias _DI4Y = 1461  #    "    "   "   "   4   "
+alias _DI400Y = 146097
+"""Number of days in 400 years."""
+alias _DI100Y = 36524
+"""Number of days in 100 years."""
+alias _DI4Y = 1461
+"""Number of days in 4 years."""
+alias _DAYS_IN_MONTH = InlineArray[Int, 13](-1, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
+alias _DAYS_BEFORE_MONTH = InlineArray[Int, 13](
+    -1, 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334
+)  # -1 is a placeholder for indexing purposes.
 
 
-fn now(*, utc: Bool = False) -> SmallTime:
+fn _is_leap(year: Int) -> Bool:
+    "year -> 1 if leap year, else 0."
+    return year % 4 == 0 and (year % 100 != 0 or year % 400 == 0)
+
+
+fn _days_before_year(year: Int) -> Int:
+    "year -> number of days before January 1st of year."
+    var y = year - 1
+    return y * 365 + y // 4 - y // 100 + y // 400
+
+
+fn _days_in_month(year: Int, month: Int) -> Int:
+    "year, month -> number of days in that month in that year."
+    if month == 2 and _is_leap(year):
+        return 29
+    return _DAYS_IN_MONTH[month]
+
+
+fn _days_before_month(year: Int, month: Int) -> Int:
+    "year, month -> number of days in year preceding first day of month."
+    if month > 2 and _is_leap(year):
+        return _DAYS_BEFORE_MONTH[month] + 1
+    return _DAYS_BEFORE_MONTH[month]
+
+
+fn _ymd2ord(year: Int, month: Int, day: Int) -> Int:
+    """year, month, day -> ordinal, considering 01-Jan-0001 as day 1."""
+    return _days_before_year(year) + _days_before_month(year, month) + day
+
+
+alias _MAX_TIMESTAMP: Int = 32503737600
+alias MAX_TIMESTAMP = _MAX_TIMESTAMP
+alias MAX_TIMESTAMP_MS = MAX_TIMESTAMP * 1000
+alias MAX_TIMESTAMP_US = MAX_TIMESTAMP * 1_000_000
+
+
+fn normalize_timestamp(owned timestamp: Float64) raises -> Float64:
+    """Normalize millisecond and microsecond timestamps into normal timestamps."""
+    if timestamp > MAX_TIMESTAMP:
+        if timestamp < MAX_TIMESTAMP_MS:
+            timestamp /= 1000
+        elif timestamp < MAX_TIMESTAMP_US:
+            timestamp /= 1_000_000
+        else:
+            raise Error("The specified timestamp " + str(timestamp) + "is too large.")
+    return timestamp
+
+
+fn now(*, utc: Bool = False) raises -> SmallTime:
     return from_timestamp(c.gettimeofday(), utc)
 
 
-fn from_timestamp(t: c.TimeVal, utc: Bool) -> SmallTime:
-    var tm: c.Tm
-    var tz: TimeZone
-    if utc:
-        tm = c.gmtime(t.tv_sec)
-        tz = TimeZone(0, String("UTC"))
-    else:
-        tm = c.localtime(t.tv_sec)
-        tz = TimeZone(int(tm.tm_gmtoff), String("local"))
+fn _validate_timestamp(tm: c.Tm, time_val: c.TimeVal, time_zone: TimeZone) raises -> SmallTime:
+    var year = int(tm.tm_year) + 1900
+    if not -1 < year < 10000:
+        raise Error("The year parsed out from the timestamp is too large or negative. Received: " + str(year))
+
+    var month = int(tm.tm_mon) + 1
+    if not -1 < month < 13:
+        raise Error("The month parsed out from the timestamp is too large or negative. Received: " + str(month))
+
+    var day = int(tm.tm_mday)
+    if not -1 < day < 32:
+        raise Error(
+            "The day of the month parsed out from the timestamp is too large or negative. Received: " + str(day)
+        )
+
+    var hours = int(tm.tm_hour)
+    if not -1 < hours < 25:
+        raise Error("The hour parsed out from the timestamp is too large or negative. Received: " + str(hours))
+
+    var minutes = int(tm.tm_min)
+    if not -1 < minutes < 61:
+        raise Error("The minutes parsed out from the timestamp is too large or negative. Received: " + str(minutes))
+
+    var seconds = int(tm.tm_sec)
+    if not -1 < seconds < 61:
+        raise Error(
+            "The day of the month parsed out from the timestamp is too large or negative. Received: " + str(seconds)
+        )
+
+    var microseconds = time_val.tv_usec
+    if microseconds < 0:
+        raise Error("Received negative microseconds. Received: " + str(microseconds))
 
     return SmallTime(
-        int(tm.tm_year) + 1900,
-        int(tm.tm_mon) + 1,
-        int(tm.tm_mday),
-        int(tm.tm_hour),
-        int(tm.tm_min),
-        int(tm.tm_sec),
-        t.tv_usec,
-        tz,
+        year,
+        month,
+        day,
+        hours,
+        minutes,
+        seconds,
+        microseconds,
+        time_zone,
     )
 
 
-fn from_timestamp(timestamp: Float64) raises -> SmallTime:
+fn from_timestamp(t: c.TimeVal, utc: Bool) raises -> SmallTime:
+    if utc:
+        return _validate_timestamp(c.gmtime(t.tv_sec), t, TimeZone(0, String("UTC")))
+
+    var tm = c.localtime(t.tv_sec)
+    var tz = TimeZone(int(tm.tm_gmtoff), String("local"))
+    return _validate_timestamp(tm, t, tz)
+
+
+fn from_timestamp(timestamp: Float64, *, utc: Bool = False) raises -> SmallTime:
     var timestamp_ = normalize_timestamp(timestamp)
-    var t = c.TimeVal(int(timestamp_))
-    return from_timestamp(t, False)
+    return from_timestamp(c.TimeVal(int(timestamp_)), utc)
 
 
-fn utc_from_timestamp(timestamp: Float64) raises -> SmallTime:
-    var timestamp_ = normalize_timestamp(timestamp)
-    var t = c.TimeVal(int(timestamp_))
-    return from_timestamp(t, True)
-
-
-fn strptime(date_str: String, fmt: String, tzinfo: TimeZone = TimeZone()) -> SmallTime:
+fn strptime(date_str: String, fmt: String, tzinfo: TimeZone = TimeZone()) raises -> SmallTime:
     """
     Create a SmallTime instance from a date string and format,
     in the style of `datetime.strptime`.  Optionally replaces the parsed time_zone.
@@ -62,19 +140,10 @@ fn strptime(date_str: String, fmt: String, tzinfo: TimeZone = TimeZone()) -> Sma
     """
     var tm = c.strptime(date_str, fmt)
     var tz = TimeZone(int(tm.tm_gmtoff)) if not tzinfo else tzinfo
-    return SmallTime(
-        int(tm.tm_year) + 1900,
-        int(tm.tm_mon) + 1,
-        int(tm.tm_mday),
-        int(tm.tm_hour),
-        int(tm.tm_min),
-        int(tm.tm_sec),
-        0,
-        tz,
-    )
+    return _validate_timestamp(tm, c.TimeVal(), tz)
 
 
-fn strptime(date_str: String, fmt: String, tz_str: String) raises -> SmallTime:
+fn strptime(date_str: String, fmt: String, tz_str: Optional[String] = None) raises -> SmallTime:
     """
     Create a SmallTime instance by time_zone_string with utc format.
 
@@ -83,8 +152,9 @@ fn strptime(date_str: String, fmt: String, tz_str: String) raises -> SmallTime:
     >>> strptime('20-01-2019 15:49:10', '%d-%m-%Y %H:%M:%S', '+08:00')
         <SmallTime [2019-01-20T15:49:10+08:00]>
     """
-    var tzinfo = time_zone.from_utc(tz_str)
-    return strptime(date_str, fmt, tzinfo)
+    if not tz_str:
+        return strptime(date_str, fmt, TimeZone())
+    return strptime(date_str, fmt, time_zone.from_utc(tz_str.value()))
 
 
 fn from_ordinal(ordinal: Int) -> SmallTime:

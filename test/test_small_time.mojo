@@ -3,7 +3,7 @@ from python import PythonObject
 from _py import py_dt_datetime, py_time
 
 import small_time.c
-from small_time.small_time import SmallTime, now, strptime, from_timestamp, utc_from_timestamp, from_ordinal
+from small_time.small_time import SmallTime, now, strptime, from_timestamp, from_ordinal
 from small_time.time_zone import TimeZone, from_utc
 
 
@@ -33,10 +33,8 @@ def test_from_timestamp():
     var result = from_timestamp(t.tv_sec)
     assert_datetime_equal(result, py_dt_datetime().now())
 
-
-def test_utc_from_timestamp():
-    var t = c.gettimeofday()
-    var result = utc_from_timestamp(t.tv_sec)
+    t = c.gettimeofday()
+    result = from_timestamp(t.tv_sec, True)
     assert_datetime_equal(result, py_dt_datetime().utcnow())
 
 
@@ -59,7 +57,7 @@ def test_strptime():
     # m = strptime("2023-10-18 15:49:10 +0800", "%Y-%m-%d %H:%M:%S %z")
     # testing.assert_equal(str(m), "2023-10-18T15:49:10.000000+08:00")
 
-    m = strptime("2023-10-18 15:49:10", "%Y-%m-%d %H:%M:%S", "+09:00")
+    m = strptime("2023-10-18 15:49:10", "%Y-%m-%d %H:%M:%S", String("+09:00"))
     testing.assert_equal(str(m), "2023-10-18T15:49:10.000000+09:00")
 
 
