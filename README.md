@@ -29,7 +29,7 @@ You have three ways to reference this library:
 
 ## Usage
 
-```python
+```mojo
 from morrow import Morrow, TimeZone
 
 # Get local date and time.

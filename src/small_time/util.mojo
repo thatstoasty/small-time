@@ -42,19 +42,3 @@ fn normalize_timestamp(owned timestamp: Float64) raises -> Float64:
         else:
             raise Error("The specified timestamp " + str(timestamp) + "is too large.")
     return timestamp
-
-
-fn _repeat_string(string: String, n: Int) -> String:
-    var result: String = ""
-    for _ in range(n):
-        result += string
-    return result
-
-
-fn rjust(string: String, width: Int, fillchar: String = " ") -> String:
-    var extra = width - len(string)
-    return _repeat_string(fillchar, extra) + string
-
-
-fn rjust(string: Int, width: Int, fillchar: String = " ") -> String:
-    return rjust(str(string), width, fillchar)

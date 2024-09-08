@@ -1,23 +1,19 @@
-from .util import rjust
+from collections import Optional
 import .c
 
-alias UTC_TZ = TimeZone(0, "UTC")
-
-
-fn none() -> TimeZone:
-    return TimeZone(0, "None")
+alias UTC_TZ = TimeZone(0, String("UTC"))
 
 
 fn local() -> TimeZone:
     var local_t = c.localtime(0)
-    return TimeZone(int(local_t.tm_gmtoff), "local")
+    return TimeZone(int(local_t.tm_gmtoff), String("local"))
 
 
 fn from_utc(utc_str: String) raises -> TimeZone:
     if len(utc_str) == 0:
         raise Error("utc_str is empty")
     if utc_str == "utc" or utc_str == "UTC" or utc_str == "Z":
-        return TimeZone(0, "utc")
+        return TimeZone(0, String("utc"))
     var p = 3 if len(utc_str) > 3 and utc_str[0:3] == "UTC" else 0
 
     var sign = -1 if utc_str[p] == "-" else 1
@@ -46,17 +42,19 @@ fn from_utc(utc_str: String) raises -> TimeZone:
 @value
 struct TimeZone(Stringable):
     var offset: Int
-    var name: String
+    var name: Optional[String]
 
-    fn __init__(inout self, offset: Int, name: String = ""):
+    fn __init__(inout self, offset: Int = 0, name: String = "utc"):
         self.offset = offset
         self.name = name
 
     fn __str__(self) -> String:
-        return self.name
+        if self.name:
+            return self.name.value()
+        return ""
 
-    fn is_none(self) -> Bool:
-        return self.name == "None"
+    fn __bool__(self) -> Bool:
+        return self.name.__bool__()
 
     fn format(self, sep: String = ":") -> String:
         var sign: String
@@ -69,4 +67,4 @@ struct TimeZone(Stringable):
             offset_abs = self.offset
         var hh = offset_abs // 3600
         var mm = offset_abs % 3600
-        return sign + rjust(hh, 2, "0") + sep + rjust(mm, 2, "0")
+        return sign + str(hh).rjust(2, "0") + sep + str(mm).rjust(2, "0")

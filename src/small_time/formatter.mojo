@@ -1,5 +1,4 @@
 from collections import InlineList
-from .util import rjust
 from .constants import MONTH_NAMES, MONTH_ABBREVIATIONS, DAY_NAMES, DAY_ABBREVIATIONS
 from .time_zone import UTC_TZ
 
@@ -92,14 +91,14 @@ struct _Formatter:
             if token_count == 1:
                 return "Y"
             if token_count == 2:
-                return rjust(m.year, 4, "0")[2:4]
+                return str(m.year).rjust(4, "0")[2:4]
             if token_count == 4:
-                return rjust(m.year, 4, "0")
+                return str(m.year).rjust(4, "0")
         elif token == _M:
             if token_count == 1:
                 return str(m.month)
             if token_count == 2:
-                return rjust(m.month, 2, "0")
+                return str(m.month).rjust(2, "0")
             if token_count == 3:
                 return String(MONTH_ABBREVIATIONS[m.month])
             if token_count == 4:
@@ -108,12 +107,12 @@ struct _Formatter:
             if token_count == 1:
                 return str(m.day)
             if token_count == 2:
-                return rjust(m.day, 2, "0")
+                return str(m.day).rjust(2, "0")
         elif token == _H:
             if token_count == 1:
                 return str(m.hour)
             if token_count == 2:
-                return rjust(m.hour, 2, "0")
+                return str(m.hour).rjust(2, "0")
         elif token == _h:
             var h_12 = m.hour
             if m.hour > 12:
@@ -121,30 +120,30 @@ struct _Formatter:
             if token_count == 1:
                 return str(h_12)
             if token_count == 2:
-                return rjust(h_12, 2, "0")
+                return str(h_12).rjust(2, "0")
         elif token == _m:
             if token_count == 1:
                 return str(m.minute)
             if token_count == 2:
-                return rjust(m.minute, 2, "0")
+                return str(m.minute).rjust(2, "0")
         elif token == _s:
             if token_count == 1:
                 return str(m.second)
             if token_count == 2:
-                return rjust(m.second, 2, "0")
+                return str(m.second).rjust(2, "0")
         elif token == _S:
             if token_count == 1:
                 return str(m.microsecond // 100000)
             if token_count == 2:
-                return rjust(m.microsecond // 10000, 2, "0")
+                return str(m.microsecond // 10000).rjust(2, "0")
             if token_count == 3:
-                return rjust(m.microsecond // 1000, 3, "0")
+                return str(m.microsecond // 1000).rjust(3, "0")
             if token_count == 4:
-                return rjust(m.microsecond // 100, 4, "0")
+                return str(m.microsecond // 100).rjust(4, "0")
             if token_count == 5:
-                return rjust(m.microsecond // 10, 5, "0")
+                return str(m.microsecond // 10).rjust(5, "0")
             if token_count == 6:
-                return rjust(m.microsecond, 6, "0")
+                return str(m.microsecond).rjust(6, "0")
         elif token == _d:
             if token_count == 1:
                 return str(m.iso_weekday())
@@ -154,9 +153,9 @@ struct _Formatter:
                 return String(DAY_NAMES[m.iso_weekday()])
         elif token == _Z:
             if token_count == 3:
-                return UTC_TZ.name if m.tz.is_none() else m.tz.name
+                return str(UTC_TZ) if not m.tz else str(m.tz)
             var separator = "" if token_count == 1 else ":"
-            if m.tz.is_none():
+            if not m.tz:
                 return UTC_TZ.format(separator)
             else:
                 return m.tz.format(separator)

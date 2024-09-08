@@ -1,5 +1,3 @@
-from .util import rjust
-
 alias SECONDS_OF_DAY = 24 * 3600
 
 
@@ -57,14 +55,14 @@ struct TimeDelta(Stringable):
         var ss = self.seconds % 60
         var hh = mm // 60
         mm = mm % 60
-        var s = str(hh) + ":" + rjust(mm, 2, "0") + ":" + rjust(ss, 2, "0")
+        var s = str(hh) + ":" + str(mm).rjust(2, "0") + ":" + str(ss).rjust(2, "0")
         if self.days:
             if abs(self.days) != 1:
                 s = str(self.days) + " days, " + s
             else:
                 s = str(self.days) + " day, " + s
         if self.microseconds:
-            s = s + rjust(self.microseconds, 6, "0")
+            s = s + str(self.microseconds).rjust(6, "0")
         return s
 
     fn total_seconds(self) -> Float64:

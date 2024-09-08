@@ -3,8 +3,8 @@ from python import PythonObject
 from _py import py_dt_datetime, py_time
 
 import small_time.c
-from small_time.small_time import SmallTime, now, strptime, from_timestamp, utc_now, utc_from_timestamp, from_ordinal
-from small_time.time_zone import TimeZone, from_utc, none
+from small_time.small_time import SmallTime, now, strptime, from_timestamp, utc_from_timestamp, from_ordinal
+from small_time.time_zone import TimeZone, from_utc
 
 
 def assert_datetime_equal(dt: SmallTime, py_dt: PythonObject):
@@ -24,7 +24,7 @@ def test_now():
 
 
 def test_utc_now():
-    var result = utc_now()
+    var result = now(utc=True)
     assert_datetime_equal(result, py_dt_datetime().utcnow())
 
 
@@ -42,17 +42,17 @@ def test_utc_from_timestamp():
 
 def test_iso_format():
     var d0 = SmallTime(2023, 10, 1, 0, 0, 0, 1234)
-    testing.assert_equal(d0.isoformat(), "2023-10-01T00:00:00.001234")
-    testing.assert_equal(d0.isoformat(timespec="seconds"), "2023-10-01T00:00:00")
-    testing.assert_equal(d0.isoformat(timespec="milliseconds"), "2023-10-01T00:00:00.001")
+    testing.assert_equal(d0.isoformat(), "2023-10-01T00:00:00.001234+00:00")
+    testing.assert_equal(d0.isoformat["seconds"](), "2023-10-01T00:00:00+00:00")
+    testing.assert_equal(d0.isoformat["milliseconds"](), "2023-10-01T00:00:00.001+00:00")
 
     # with TimeZone
     var d1 = SmallTime(2023, 10, 1, 0, 0, 0, 1234, TimeZone(28800, "Beijing"))
-    testing.assert_equal(d1.isoformat(timespec="seconds"), "2023-10-01T00:00:00+08:00")
+    testing.assert_equal(d1.isoformat["seconds"](), "2023-10-01T00:00:00+08:00")
 
 
 def test_strptime():
-    m = strptime("20-01-2023 15:49:10", "%d-%m-%Y %H:%M:%S", none())
+    m = strptime("20-01-2023 15:49:10", "%d-%m-%Y %H:%M:%S", TimeZone())
     testing.assert_equal(str(m), "2023-01-20T15:49:10.000000+00:00")
 
     # TODO: There's some issues with this test causing an invalid ptr free?

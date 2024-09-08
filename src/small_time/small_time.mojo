@@ -1,4 +1,5 @@
-from .util import normalize_timestamp, rjust, _ymd2ord, _days_before_year
+from collections import InlineList
+from .util import normalize_timestamp, _ymd2ord, _days_before_year
 import .c
 import .time_zone
 from .time_delta import TimeDelta
@@ -11,12 +12,8 @@ alias _DI100Y = 36524  #    "    "   "   " 100   "
 alias _DI4Y = 1461  #    "    "   "   "   4   "
 
 
-fn now() -> SmallTime:
-    return from_timestamp(c.gettimeofday(), False)
-
-
-fn utc_now() -> SmallTime:
-    return from_timestamp(c.gettimeofday(), True)
+fn now(*, utc: Bool = False) -> SmallTime:
+    return from_timestamp(c.gettimeofday(), utc)
 
 
 fn from_timestamp(t: c.TimeVal, utc: Bool) -> SmallTime:
@@ -24,10 +21,10 @@ fn from_timestamp(t: c.TimeVal, utc: Bool) -> SmallTime:
     var tz: TimeZone
     if utc:
         tm = c.gmtime(t.tv_sec)
-        tz = TimeZone(0, "UTC")
+        tz = TimeZone(0, String("UTC"))
     else:
         tm = c.localtime(t.tv_sec)
-        tz = TimeZone(int(tm.tm_gmtoff), "local")
+        tz = TimeZone(int(tm.tm_gmtoff), String("local"))
 
     return SmallTime(
         int(tm.tm_year) + 1900,
@@ -53,7 +50,7 @@ fn utc_from_timestamp(timestamp: Float64) raises -> SmallTime:
     return from_timestamp(t, True)
 
 
-fn strptime(date_str: String, fmt: String, tzinfo: TimeZone = time_zone.none()) -> SmallTime:
+fn strptime(date_str: String, fmt: String, tzinfo: TimeZone = TimeZone()) -> SmallTime:
     """
     Create a SmallTime instance from a date string and format,
     in the style of `datetime.strptime`.  Optionally replaces the parsed time_zone.
@@ -64,7 +61,7 @@ fn strptime(date_str: String, fmt: String, tzinfo: TimeZone = time_zone.none()) 
         <SmallTime [2019-01-20T15:49:10+00:00]>
     """
     var tm = c.strptime(date_str, fmt)
-    var tz = TimeZone(int(tm.tm_gmtoff)) if tzinfo.is_none() else tzinfo
+    var tz = TimeZone(int(tm.tm_gmtoff)) if not tzinfo else tzinfo
     return SmallTime(
         int(tm.tm_year) + 1900,
         int(tm.tm_mon) + 1,
@@ -166,7 +163,7 @@ fn from_ordinal(ordinal: Int) -> SmallTime:
 
 
 @value
-struct SmallTime(StringableRaising):
+struct SmallTime(Stringable):
     var year: Int
     var month: Int
     var day: Int
@@ -185,7 +182,7 @@ struct SmallTime(StringableRaising):
         minute: Int = 0,
         second: Int = 0,
         microsecond: Int = 0,
-        tz: TimeZone = time_zone.none(),
+        tz: TimeZone = TimeZone(),
     ):
         self.year = year
         self.month = month
@@ -203,7 +200,7 @@ struct SmallTime(StringableRaising):
         :param fmt: the format string.
 
         Usage::
-            >>> var m = self.now()
+            >>> var m = now()
             >>> m.format('YYYY-MM-DD HH:mm:ss ZZ')
             '2013-05-09 03:56:47 -00:00'
 
@@ -216,7 +213,7 @@ struct SmallTime(StringableRaising):
         """
         return formatter.format(self, fmt)
 
-    fn isoformat(self, sep: String = "T", timespec: StringLiteral = "auto") raises -> String:
+    fn isoformat[timespec: String = "auto"](self, sep: String = "T") -> String:
         """Return the time formatted according to ISO.
 
         The full format looks like 'YYYY-MM-DD HH:MM:SS.mmmmmm'.
@@ -231,37 +228,51 @@ struct SmallTime(StringableRaising):
         terms of the time to include. Valid options are 'auto', 'hours',
         'minutes', 'seconds', 'milliseconds' and 'microseconds'.
         """
-        var date_str = (rjust(self.year, 4, "0") + "-" + rjust(self.month, 2, "0") + "-" + rjust(self.day, 2, "0"))
+        alias valid = InlineList[String, 6]("auto", "hours", "minutes", "seconds", "milliseconds", "microseconds")
+        constrained[
+            timespec in valid,
+            msg="timespec must be one of the following: 'auto', 'hours', 'minutes', 'seconds', 'milliseconds', 'microseconds'",
+        ]()
+        var date_str = (
+            str(self.year).rjust(4, "0") + "-" + str(self.month).rjust(2, "0") + "-" + str(self.day).rjust(2, "0")
+        )
         var time_str = String("")
+
+        @parameter
         if timespec == "auto" or timespec == "microseconds":
             time_str = (
-                rjust(self.hour, 2, "0")
+                str(self.hour).rjust(2, "0")
                 + ":"
-                + rjust(self.minute, 2, "0")
+                + str(self.minute).rjust(2, "0")
                 + ":"
-                + rjust(self.second, 2, "0")
+                + str(self.second).rjust(2, "0")
                 + "."
-                + rjust(self.microsecond, 6, "0")
+                + str(self.microsecond).rjust(6, "0")
             )
         elif timespec == "milliseconds":
             time_str = (
-                rjust(self.hour, 2, "0")
+                str(self.hour).rjust(2, "0")
                 + ":"
-                + rjust(self.minute, 2, "0")
+                + str(self.minute).rjust(2, "0")
                 + ":"
-                + rjust(self.second, 2, "0")
+                + str(self.second).rjust(2, "0")
                 + "."
-                + rjust(self.microsecond // 1000, 3, "0")
+                + str(self.microsecond // 1000).rjust(3, "0")
             )
         elif timespec == "seconds":
-            time_str = rjust(self.hour, 2, "0") + ":" + rjust(self.minute, 2, "0") + ":" + rjust(self.second, 2, "0")
+            time_str = (
+                str(self.hour).rjust(2, "0")
+                + ":"
+                + str(self.minute).rjust(2, "0")
+                + ":"
+                + str(self.second).rjust(2, "0")
+            )
         elif timespec == "minutes":
-            time_str = rjust(self.hour, 2, "0") + ":" + rjust(self.minute, 2, "0")
+            time_str = str(self.hour).rjust(2, "0") + ":" + str(self.minute).rjust(2, "0")
         elif timespec == "hours":
-            time_str = rjust(self.hour, 2, "0")
-        else:
-            raise Error()
-        if self.tz.is_none():
+            time_str = str(self.hour).rjust(2, "0")
+
+        if not self.tz:
             return sep.join(date_str, time_str)
         else:
             return sep.join(date_str, time_str) + self.tz.format()
@@ -279,7 +290,7 @@ struct SmallTime(StringableRaising):
         # 1-Jan-0001 is a Monday
         return self.to_ordinal() % 7 or 7
 
-    fn __str__(self) raises -> String:
+    fn __str__(self) -> String:
         return self.isoformat()
 
     fn __sub__(self, other: Self) -> TimeDelta:
