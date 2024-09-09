@@ -142,8 +142,7 @@ struct _Formatter:
             if token_count == 1:
                 return "Y"
             if token_count == 2:
-                return str(m.year)[-2:]
-                # return str(m.year).rjust(4, "0")[2:4]
+                return str(m.year).rjust(4, "0")[2:4]
             if token_count == 4:
                 return str(m.year).rjust(4, "0")
         elif token == _M:
