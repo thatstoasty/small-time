@@ -1,8 +1,7 @@
-from .util import rjust
-
 alias SECONDS_OF_DAY = 24 * 3600
 
 
+@register_passable("trivial")
 struct TimeDelta(Stringable):
     var days: Int
     var seconds: Int
@@ -51,31 +50,25 @@ struct TimeDelta(Stringable):
         self.seconds = self.seconds % SECONDS_OF_DAY
         self.days += days_
 
-    fn __copyinit__(inout self, other: Self):
-        self.days = other.days
-        self.seconds = other.seconds
-        self.microseconds = other.microseconds
-
     fn __str__(self) -> String:
         var mm = self.seconds // 60
         var ss = self.seconds % 60
         var hh = mm // 60
         mm = mm % 60
-        var s = str(hh) + ":" + rjust(mm, 2, "0") + ":" + rjust(ss, 2, "0")
+        var s = str(hh) + ":" + str(mm).rjust(2, "0") + ":" + str(ss).rjust(2, "0")
         if self.days:
             if abs(self.days) != 1:
                 s = str(self.days) + " days, " + s
             else:
                 s = str(self.days) + " day, " + s
         if self.microseconds:
-            s = s + rjust(self.microseconds, 6, "0")
+            s = s + str(self.microseconds).rjust(6, "0")
         return s
 
     fn total_seconds(self) -> Float64:
         """Total seconds in the duration."""
         return ((self.days * 86400 + self.seconds) * 10**6 + self.microseconds) / 10**6
 
-    @always_inline
     fn __add__(self, other: Self) -> Self:
         return Self(
             self.days + other.days,
@@ -112,7 +105,6 @@ struct TimeDelta(Stringable):
         else:
             return self
 
-    @always_inline
     fn __mul__(self, other: Int) -> Self:
         return Self(
             self.days * other,
@@ -133,7 +125,6 @@ struct TimeDelta(Stringable):
     fn __eq__(self, other: Self) -> Bool:
         return self.days == other.days and self.seconds == other.seconds and self.microseconds == other.microseconds
 
-    @always_inline
     fn __le__(self, other: Self) -> Bool:
         if self.days < other.days:
             return True
@@ -144,7 +135,6 @@ struct TimeDelta(Stringable):
                 return True
         return False
 
-    @always_inline
     fn __lt__(self, other: Self) -> Bool:
         if self.days < other.days:
             return True

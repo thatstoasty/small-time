@@ -1,5 +1,3 @@
-from .morrow import Morrow
-from .timezone import TimeZone
-from .timedelta import TimeDelta
-
-alias __version__ = "0.4.0"
+from .small_time import SmallTime
+from .time_zone import TimeZone
+from .time_delta import TimeDelta

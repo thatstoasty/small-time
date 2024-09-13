@@ -1,17 +1,55 @@
-from collections.vector import InlinedFixedVector
-from utils.static_tuple import StaticTuple
-from .util import rjust
-from .constants import MONTH_NAMES, MONTH_ABBREVIATIONS, DAY_NAMES, DAY_ABBREVIATIONS
-from .timezone import UTC_TZ
+from collections import InlineList, InlineArray
+from .time_zone import UTC_TZ
 
+alias MONTH_NAMES = InlineArray[String, 13](
+    "",
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+)
+alias MONTH_ABBREVIATIONS = InlineArray[String, 13](
+    "",
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+)
+alias DAY_NAMES = InlineArray[String, 8](
+    "",
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+    "Sunday",
+)
+alias DAY_ABBREVIATIONS = InlineArray[String, 8]("", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
 alias formatter = _Formatter()
 
 
 struct _Formatter:
-    var _sub_chrs: InlinedFixedVector[Int, 128]
+    var _sub_chrs: InlineList[Int, 128]
 
     fn __init__(inout self):
-        self._sub_chrs = InlinedFixedVector[Int, 128](0)
+        self._sub_chrs = InlineList[Int, 128]()
         for i in range(128):
             self._sub_chrs[i] = 0
         self._sub_chrs[_Y] = 4
@@ -27,94 +65,105 @@ struct _Formatter:
         self._sub_chrs[_A] = 1
         self._sub_chrs[_a] = 1
 
-    fn format(self, m: Morrow, fmt: String) -> String:
+    fn format(self, m: SmallTime, fmt: String) -> String:
         """
-        "YYYY[abc]MM" -> repalce("YYYY") + "abc" + replace("MM")
+        "YYYY[abc]MM" -> replace("YYYY") + "abc" + replace("MM")
         """
         if len(fmt) == 0:
             return ""
-        var ret: String = ""
+
+        var result: String = ""
         var in_bracket = False
-        var start_idx = 0
+        var start = 0
+
         for i in range(len(fmt)):
             if fmt[i] == "[":
                 if in_bracket:
-                    ret += "["
+                    result += "["
                 else:
                     in_bracket = True
-                ret += self.replace(m, fmt[start_idx:i])
-                start_idx = i + 1
+                result += self.replace(m, fmt[start:i])
+                start = i + 1
             elif fmt[i] == "]":
                 if in_bracket:
-                    ret += fmt[start_idx:i]
+                    result += fmt[start:i]
                     in_bracket = False
                 else:
-                    ret += self.replace(m, fmt[start_idx:i])
-                    ret += "]"
-                start_idx = i + 1
-        if in_bracket:
-            ret += "["
-        if start_idx < len(fmt):
-            ret += self.replace(m, fmt[start_idx:])
-        return ret
+                    result += self.replace(m, fmt[start:i])
+                    result += "]"
+                start = i + 1
 
-    fn replace(self, m: Morrow, s: String) -> String:
+        if in_bracket:
+            result += "["
+
+        if start < len(fmt):
+            result += self.replace(m, fmt[start:])
+        return result
+
+    fn replace(self, m: SmallTime, fmt: String) -> String:
         """
         split token and replace
         """
-        if len(s) == 0:
+        if len(fmt) == 0:
             return ""
-        var ret: String = ""
-        var match_chr_ord = 0
-        var match_count = 0
-        for i in range(len(s)):
-            var c = ord(s[i])
-            if 0 < c < 128 and self._sub_chrs[c] > 0:
-                if c == match_chr_ord:
-                    match_count += 1
-                else:
-                    ret += self.replace_token(m, match_chr_ord, match_count)
-                    match_chr_ord = c
-                    match_count = 1
-                if match_count == self._sub_chrs[c]:
-                    ret += self.replace_token(m, match_chr_ord, match_count)
-                    match_chr_ord = 0
-            else:
-                if match_chr_ord > 0:
-                    ret += self.replace_token(m, match_chr_ord, match_count)
-                    match_chr_ord = 0
-                ret += s[i]
-        if match_chr_ord > 0:
-            ret += self.replace_token(m, match_chr_ord, match_count)
-        return ret
 
-    fn replace_token(self, m: Morrow, token: Int, token_count: Int) -> String:
+        var result: String = ""
+        var matched_byte = 0
+        var matched_count = 0
+        for i in range(len(fmt)):
+            var c = ord(fmt[i])
+
+            # If the current character is not a token, add it to the result.
+            if c > 127 or self._sub_chrs[c] == 0:
+                if matched_byte > 0:
+                    result += self.replace_token(m, matched_byte, matched_count)
+                    matched_byte = 0
+                result += fmt[i]
+                continue
+
+            # If the current character is the same as the previous one, increment the count.
+            if c == matched_byte:
+                matched_count += 1
+                continue
+
+            # If the current character is different from the previous one, replace the previous tokens
+            # and move onto the next token to track.
+            result += self.replace_token(m, matched_byte, matched_count)
+            matched_byte = c
+            matched_count = 1
+
+        # If no tokens were found, append an empty string and return the original.
+        if matched_byte > 0:
+            result += self.replace_token(m, matched_byte, matched_count)
+        return result
+
+    fn replace_token(self, m: SmallTime, token: Int, token_count: Int) -> String:
         if token == _Y:
             if token_count == 1:
                 return "Y"
             if token_count == 2:
-                return rjust(m.year, 4, "0")[2:4]
+                return str(m.year).rjust(4, "0")[2:4]
             if token_count == 4:
-                return rjust(m.year, 4, "0")
+                return str(m.year).rjust(4, "0")
         elif token == _M:
             if token_count == 1:
                 return str(m.month)
             if token_count == 2:
-                return rjust(m.month, 2, "0")
+                return str(m.month).rjust(2, "0")
             if token_count == 3:
-                return String(MONTH_ABBREVIATIONS[m.month])
+                return MONTH_ABBREVIATIONS[int(m.month)]
             if token_count == 4:
-                return String(MONTH_NAMES[m.month])
+                return MONTH_NAMES[int(m.month)]
         elif token == _D:
             if token_count == 1:
                 return str(m.day)
             if token_count == 2:
-                return rjust(m.day, 2, "0")
+                return str(m.day).rjust(2, "0")
         elif token == _H:
             if token_count == 1:
                 return str(m.hour)
             if token_count == 2:
-                return rjust(m.hour, 2, "0")
+                return str(m.hour).rjust(2, "0")
         elif token == _h:
             var h_12 = m.hour
             if m.hour > 12:
@@ -122,42 +171,42 @@ struct _Formatter:
             if token_count == 1:
                 return str(h_12)
             if token_count == 2:
-                return rjust(h_12, 2, "0")
+                return str(h_12).rjust(2, "0")
         elif token == _m:
             if token_count == 1:
                 return str(m.minute)
             if token_count == 2:
-                return rjust(m.minute, 2, "0")
+                return str(m.minute).rjust(2, "0")
         elif token == _s:
             if token_count == 1:
                 return str(m.second)
             if token_count == 2:
-                return rjust(m.second, 2, "0")
+                return str(m.second).rjust(2, "0")
         elif token == _S:
             if token_count == 1:
                 return str(m.microsecond // 100000)
             if token_count == 2:
-                return rjust(m.microsecond // 10000, 2, "0")
+                return str(m.microsecond // 10000).rjust(2, "0")
             if token_count == 3:
-                return rjust(m.microsecond // 1000, 3, "0")
+                return str(m.microsecond // 1000).rjust(3, "0")
             if token_count == 4:
-                return rjust(m.microsecond // 100, 4, "0")
+                return str(m.microsecond // 100).rjust(4, "0")
             if token_count == 5:
-                return rjust(m.microsecond // 10, 5, "0")
+                return str(m.microsecond // 10).rjust(5, "0")
             if token_count == 6:
-                return rjust(m.microsecond, 6, "0")
+                return str(m.microsecond).rjust(6, "0")
         elif token == _d:
             if token_count == 1:
-                return str(m.isoweekday())
+                return str(m.iso_weekday())
             if token_count == 3:
-                return String(DAY_ABBREVIATIONS[m.isoweekday()])
+                return DAY_ABBREVIATIONS[m.iso_weekday()]
             if token_count == 4:
-                return String(DAY_NAMES[m.isoweekday()])
+                return DAY_NAMES[m.iso_weekday()]
         elif token == _Z:
             if token_count == 3:
-                return UTC_TZ.name if m.tz.is_none() else m.tz.name
+                return str(UTC_TZ) if not m.tz else str(m.tz)
             var separator = "" if token_count == 1 else ":"
-            if m.tz.is_none():
+            if not m.tz:
                 return UTC_TZ.format(separator)
             else:
                 return m.tz.format(separator)
