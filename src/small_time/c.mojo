@@ -92,5 +92,6 @@ fn strftime(format: String, owned time: Tm) -> String:
 
 
 fn gmtime(owned tv_sec: Int) -> Tm:
+    """Converts a time value to a broken-down UTC time."""
     var tm = external_call["gmtime", UnsafePointer[Tm]](Reference(tv_sec)).take_pointee()
     return tm
