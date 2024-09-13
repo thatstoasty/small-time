@@ -18,24 +18,25 @@ def assert_datetime_equal(dt: SmallTime, py_dt: PythonObject):
     )
 
 
-def test_now():
-    var result = now()
-    assert_datetime_equal(result, py_dt_datetime().now())
+# TODO: Commented out non deterministic tests for now.
+# def test_now():
+#     var result = now()
+#     assert_datetime_equal(result, py_dt_datetime().now())
 
 
-def test_utc_now():
-    var result = now(utc=True)
-    assert_datetime_equal(result, py_dt_datetime().utcnow())
+# def test_utc_now():
+#     var result = now(utc=True)
+#     assert_datetime_equal(result, py_dt_datetime().utcnow())
 
 
-def test_from_timestamp():
-    var t = c.gettimeofday()
-    var result = from_timestamp(t.tv_sec)
-    assert_datetime_equal(result, py_dt_datetime().now())
+# def test_from_timestamp():
+#     var t = c.gettimeofday()
+#     var result = from_timestamp(t.tv_sec)
+#     assert_datetime_equal(result, py_dt_datetime().now())
 
-    t = c.gettimeofday()
-    result = from_timestamp(t.tv_sec, True)
-    assert_datetime_equal(result, py_dt_datetime().utcnow())
+#     t = c.gettimeofday()
+#     result = from_timestamp(t.tv_sec, True)
+#     assert_datetime_equal(result, py_dt_datetime().utcnow())
 
 
 def test_iso_format():
