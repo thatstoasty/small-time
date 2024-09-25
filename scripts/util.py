@@ -3,6 +3,7 @@ import argparse
 import os
 import subprocess
 import shutil
+import glob
 from typing import Any
 
 
@@ -78,13 +79,15 @@ def publish_to_prefix(args: Any) -> None:
         raise ValueError("CONDA_BLD_PATH environment variable is not set. This ")
 
     print(f"Publishing packages to: {args.channel}")
-    for file in os.listdir(conda_build_path):
-        if file.endswith(".conda"):
+    for file in glob.glob(f'{conda_build_path}/**/*.conda'):
+        try:
             subprocess.run(
                 ["rattler-build", "upload", "prefix", "-c", args.channel, file],
                 check=True,
             )
-            os.remove(file)
+        except subprocess.CalledProcessError:
+            pass
+        os.remove(file)
 
 
 def remove_temp_directory() -> None:
