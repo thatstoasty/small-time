@@ -37,7 +37,7 @@ def main():
         config = tomllib.load(f)
 
     recipe: str
-    with open('src/template.yaml', 'r') as f:
+    with open('src/recipe.tmpl', 'r') as f:
         recipe = f.read()
 
     # Replace the placeholders in the recipe with the project configuration.
