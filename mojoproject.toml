@@ -5,6 +5,11 @@ description = "Datetime library."
 name = "small_time"
 platforms = ["osx-arm64", "linux-64"]
 version = "0.1.4.nightly"
+license = "MIT"
+license-file = "LICENSE"
+homepage = "https://github.com/thatstoasty/small-time"
+repository = "https://github.com/thatstoasty/small-time"
+
 
 [tasks]
 run_file = "bash scripts/run_file.sh"
