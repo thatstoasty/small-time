@@ -12,12 +12,12 @@ repository = "https://github.com/thatstoasty/small-time"
 
 
 [tasks]
-run_file = "bash scripts/run_file.sh"
-tests = "bash scripts/tests.sh"
-benchmarks = "bash scripts/benchmarks.sh"
-template = "magic run python scripts/templater.py"
-build = { cmd = "bash scripts/build.sh", env = {MODULAR_MOJO_IMPORT_PATH = "$CONDA_PREFIX/lib/mojo"} }
-publish = { cmd = "bash scripts/publish.sh", env = { PREFIX_API_KEY = "$PREFIX_API_KEY" } }
+tests = "python scripts/util.py run tests"
+benchmarks = "python scripts/util.py run benchmarks"
+examples = "python scripts/util.py run examples"
+template = "python scripts/util.py templater"
+build = { cmd = "python scripts/util.py build", env = {MODULAR_MOJO_IMPORT_PATH = "$CONDA_PREFIX/lib/mojo"} }
+publish = { cmd = "python scripts/util.py pubilsh", env = { PREFIX_API_KEY = "$PREFIX_API_KEY" } }
 bp = { depends_on=["build", "publish"] }
 
 [dependencies]
