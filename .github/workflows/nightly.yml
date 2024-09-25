@@ -44,5 +44,5 @@ jobs:
           chmod +x rattler-build
 
           # Build and push
-          magic -e nightly run build nightly
-          magic -e nightly run publish mojo-community-nightly
+          magic run -e nightly build nightly
+          magic run -e nightly publish mojo-community-nightly
