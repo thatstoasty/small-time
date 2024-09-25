@@ -13,5 +13,5 @@ elif [[ "${ENV}" == "nightly" ]]; then
 fi
 
 magic run template -m "${ENV}"
-rattler-build build -r src -c "${MAX_CHANNEL}" -c conda-forge --skip-existing=all
+magic run rattler-build build -r src -c "${MAX_CHANNEL}" -c conda-forge --skip-existing=all
 rm src/recipe.yaml
