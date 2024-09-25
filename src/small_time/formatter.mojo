@@ -107,7 +107,7 @@ struct _Formatter:
         if len(fmt) == 0:
             return ""
 
-        var result: String = ""
+        var result: String = ''
         var matched_byte = 0
         var matched_count = 0
         for i in range(len(fmt)):
