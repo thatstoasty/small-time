@@ -3,7 +3,7 @@ name: Build all packages
 on:
   push:
     branches:
-      - main
+      - nightly
 
 # on: ["push"]
 
