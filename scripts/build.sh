@@ -8,7 +8,7 @@ ENV="${1-default}"
 if [[ "${ENV}" == "--help" ]]; then
     echo "Usage: ENV - Argument 1 corresponds with the environment you wish to build the package for."
     exit 0
-else if [[ "${ENV}" == "nightly" ]]; then
+elif [[ "${ENV}" == "nightly" ]]; then
     MAX_CHANNEL="https://conda.modular.com/max-nightly"
 fi
 
