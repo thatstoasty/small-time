@@ -4,8 +4,8 @@ on:
   push:
     branches:
       - nightly
-    # paths:
-    #     - src/**
+    paths:
+        - src/**
 
 # on: ["push"]
 
@@ -44,7 +44,6 @@ jobs:
           if [[ $TARGET_PLATFORM == "linux-64" ]]; then RATTLER_BINARY="rattler-build-x86_64-unknown-linux-musl"; fi
           curl -SL --progress-bar https://github.com/prefix-dev/rattler-build/releases/latest/download/${RATTLER_BINARY} -o rattler-build
           chmod +x rattler-build
-          echo $PATH
 
           # Build and push
           magic run -e nightly build nightly
