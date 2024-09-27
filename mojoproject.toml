@@ -4,7 +4,7 @@ channels = ["conda-forge", "https://conda.modular.com/max"]
 description = "Datetime library."
 name = "small_time"
 platforms = ["osx-arm64", "linux-64"]
-version = "0.1.4.nightly"
+version = "1.24.6.0.dev2024092705"
 license = "MIT"
 license-file = "LICENSE"
 homepage = "https://github.com/thatstoasty/small-time"
@@ -27,7 +27,7 @@ max = ">=24.5.0,<25"
 channels = ["conda-forge", "https://conda.modular.com/max-nightly"]
 
 [feature.nightly.dependencies]
-max = ">=24.6.0.dev2024092405"
+max = ">=24.6.0.dev2024092705"
 
 [environments]
 nightly = ["nightly"]
