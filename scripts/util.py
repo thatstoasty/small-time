@@ -166,7 +166,7 @@ def build_conda_package(args: Any) -> None:
 
     generate_recipe(args)
     subprocess.run(
-        ["rattler-build", "build", "-r", RECIPE_DIR, "--skip-existing=all", *options],
+        ["magic", "run", "rattler-build", "build", "-r", RECIPE_DIR, "--skip-existing=all", *options],
         check=True,
     )
     os.remove(f"{RECIPE_DIR}/recipe.yaml")
