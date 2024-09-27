@@ -82,7 +82,7 @@ def publish_to_prefix(args: Any) -> None:
     for file in glob.glob(f'{conda_build_path}/**/*.conda'):
         try:
             subprocess.run(
-                ["rattler-build", "upload", "prefix", "-c", args.channel, file],
+                ["magic", "run", "rattler-build", "upload", "prefix", "-c", args.channel, file],
                 check=True,
             )
         except subprocess.CalledProcessError:

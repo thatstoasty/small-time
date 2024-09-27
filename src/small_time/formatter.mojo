@@ -72,7 +72,7 @@ struct _Formatter:
         if len(fmt) == 0:
             return ""
 
-        var result: String = ""
+        var result: String = ''
         var in_bracket = False
         var start = 0
 
