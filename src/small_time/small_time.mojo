@@ -14,7 +14,7 @@ alias _DI4Y = 1461
 alias _DAYS_IN_MONTH = InlineArray[Int, 13](-1, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
 alias _DAYS_BEFORE_MONTH = InlineArray[Int, 13](
     -1, 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334
-)  # -1 is a placeholder for indexing purposes.
+)  # -1 is a placeholder for indexing purposes
 
 
 fn _is_leap(year: Int) -> Bool:
