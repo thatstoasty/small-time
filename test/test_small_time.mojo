@@ -54,9 +54,10 @@ def test_strptime():
     m = strptime("20-01-2023 15:49:10", "%d-%m-%Y %H:%M:%S", TimeZone())
     testing.assert_equal(str(m), "2023-01-20T15:49:10.000000+00:00")
 
-    # TODO: There's some issues with this test causing an invalid ptr free?
+    # TODO: Need to add more tests for different types of timestamps to parse.
+    # Not sure if this is a valid timestamp? Python can parse it so...
     # m = strptime("2023-10-18 15:49:10 +0800", "%Y-%m-%d %H:%M:%S %z")
-    # testing.assert_equal(str(m), "2023-10-18T15:49:10.000000+08:00")
+    # testing.assert_equal(str(m), "2023-10-18T15:49:10.000000+00:00")
 
     m = strptime("2023-10-18 15:49:10", "%Y-%m-%d %H:%M:%S", String("+09:00"))
     testing.assert_equal(str(m), "2023-10-18T15:49:10.000000+09:00")
