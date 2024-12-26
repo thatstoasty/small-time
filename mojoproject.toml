@@ -4,12 +4,11 @@ channels = ["conda-forge", "https://conda.modular.com/max"]
 description = "Datetime library."
 name = "small_time"
 platforms = ["osx-arm64", "linux-64"]
-version = "1.5.0"
+version = "0.1.6"
 license = "MIT"
 license-file = "LICENSE"
 homepage = "https://github.com/thatstoasty/small-time"
 repository = "https://github.com/thatstoasty/small-time"
-
 
 [tasks]
 tests = "python scripts/util.py run tests"
