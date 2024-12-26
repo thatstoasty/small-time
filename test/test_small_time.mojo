@@ -7,6 +7,7 @@ from small_time.small_time import SmallTime, now, strptime, from_timestamp, from
 from small_time.time_zone import TimeZone, from_utc
 
 
+# TODO: Need a better way to test this, since it's not deterministic.
 def assert_datetime_equal(dt: SmallTime, py_dt: PythonObject):
     testing.assert_true(
         dt.year == int(py_dt.year)
@@ -23,18 +24,12 @@ def test_now():
 
 
 def test_utc_now():
-    var result = now(utc=True)
-    assert_datetime_equal(result, py_dt_datetime().utcnow())
+    assert_datetime_equal(now(utc=True), py_dt_datetime().utcnow())
 
 
 def test_from_timestamp():
-    var t = c.gettimeofday()
-    var result = from_timestamp(t.tv_sec)
-    assert_datetime_equal(result, py_dt_datetime().now())
-
-    t = c.gettimeofday()
-    result = from_timestamp(t.tv_sec, utc=True)
-    assert_datetime_equal(result, py_dt_datetime().utcnow())
+    assert_datetime_equal(from_timestamp(c.gettimeofday().tv_sec), py_dt_datetime().now())
+    assert_datetime_equal(from_timestamp(c.gettimeofday().tv_sec, utc=True), py_dt_datetime().utcnow())
 
 
 def test_iso_format():
