@@ -4,16 +4,16 @@ on:
   push:
     branches:
       - main
-    # paths:
-    #   - src/**
+    paths:
+      - src/**
 
 jobs:
   build:
     strategy:
       matrix:
         include:
-          # - { target: linux-64, os: ubuntu-latest }
-          # - { target: osx-arm64, os: macos-latest }
+          - { target: linux-64, os: ubuntu-latest }
+          - { target: osx-arm64, os: macos-latest }
           - { target: linux-aarch64, os: ubuntu-24.04-arm }
       fail-fast: false
 
@@ -30,9 +30,11 @@ jobs:
 
       - name: Install magic
         run: |
-          SHELL_TYPE=$(basename "$SHELL")
-          echo $SHELL_TYPE
-          curl -ssL https://magic.modular.com | bash
+          if [[ ${{ matrix.target }} == "linux-aarch64" ]]; then
+            bash scripts/install_magic_aarch64.sh
+          else
+            curl -ssL https://magic.modular.com | bash
+          fi
 
       - name: Build package for target platform
         env:
