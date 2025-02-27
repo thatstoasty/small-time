@@ -31,7 +31,7 @@ jobs:
 
       - name: Install magic
         run: |
-          if [[ ${{ matrix.os }} == "linux-aarch64" ]]; then
+          if [[ ${{ matrix.target }} == "linux-aarch64" ]]; then
             bash scripts/install_magic_aarch64.sh
           else
             curl -ssL https://magic.modular.com | bash
