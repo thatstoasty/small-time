@@ -109,6 +109,7 @@ case "$(basename "$SHELL")" in
             BASH_FILE=~/.bashrc
         fi
         LINE="export PATH=\"\$PATH:${BIN_DIR}\""
+        update_shell $BASH_FILE "$LINE"
         ;;
 
     bash)
