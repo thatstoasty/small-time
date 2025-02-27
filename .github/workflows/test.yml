@@ -29,9 +29,8 @@ jobs:
 
       - name: Install magic
         run: |
-          SHELL_TYPE=$(basename "$SHELL")
-          echo $SHELL_TYPE
-          curl -ssL https://magic.modular.com | bash
+          bash scripts/install_magic_aarch64.sh
+          # curl -ssL https://magic.modular.com | bash
 
       - name: Run tests
         run: |
