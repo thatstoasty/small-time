@@ -9,11 +9,6 @@ from small_time.time_zone import TimeZone, from_utc
 
 # TODO: Need a better way to test this, since it's not deterministic.
 def assert_datetime_equal(dt: SmallTime, py_dt: PythonObject):
-    print("asserting dt", dt.year == Int(py_dt.year)
-        and dt.month == Int(py_dt.month)
-        and dt.hour == Int(py_dt.hour)
-        and dt.minute == Int(py_dt.minute)
-        and dt.second == Int(py_dt.second))
     testing.assert_true(
         dt.year == Int(py_dt.year)
         and dt.month == Int(py_dt.month)
