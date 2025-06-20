@@ -15,7 +15,7 @@ repos:
         stages: [pre-commit]
       - id: check-docstrings
         name: check-docstrings
-        entry: python3 ./scripts/check-docstrings.py
+        entry: pixi run python3 ./scripts/check-docstrings.py
         language: system
         pass_filenames: false
         stages: [pre-commit]
