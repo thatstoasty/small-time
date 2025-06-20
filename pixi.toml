@@ -36,7 +36,6 @@ backend = { name = "pixi-build-rattler-build", version = "*" }
 [feature.util.dependencies]
 typer = ">=0.16.0,<0.17"
 pyyaml = ">=6.0.2,<7"
-pytz = "*"
 
 [environments]
 default = { solve-group = "default" }

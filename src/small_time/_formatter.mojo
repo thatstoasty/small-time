@@ -31,7 +31,6 @@ alias MONTH_ABBREVIATIONS: InlineArray[String, 13] = [
     "Dec",
 ]
 """The month name abbreviations."""
-
 alias DAY_NAMES: InlineArray[String, 8] = [
     "",
     "Monday",
@@ -58,13 +57,13 @@ alias FORMATTER = _Formatter()
 """Default formatter instance."""
 
 
-
 @fieldwise_init
 struct Token:
     """Token for the formatter."""
+
     var char: Byte
     """The character of the token."""
-    
+
     alias _Y = Byte(ord("Y"))
     alias _M = Byte(ord("M"))
     alias _D = Byte(ord("D"))
@@ -82,21 +81,21 @@ struct Token:
 
     fn __eq__(self, other: Self) -> Bool:
         """Checks if two tokens are equal.
-        
+
         Args:
             other: The other token to compare with.
-        
+
         Returns:
             True if the tokens are equal, False otherwise.
         """
         return self.char == other.char
-    
+
     fn __eq__(self, other: Byte) -> Bool:
         """Checks if two tokens are equal.
-        
+
         Args:
             other: The other token to compare with.
-        
+
         Returns:
             True if the tokens are equal, False otherwise.
         """
@@ -122,6 +121,7 @@ fn find_brackets[template: StringSlice]() -> List[List[Int]]:
 
 struct _Formatter:
     """SmallTime formatter."""
+
     var sub_characters: InlineArray[Int, 128]
     """Substitution characters."""
 
@@ -151,40 +151,42 @@ struct _Formatter:
 
         Args:
             time: SmallTime datetime to format.
-        
+
         Returns:
             Formatted time string.
         """
+
         @parameter
         if len(template) == 0:
             return String()
-        
+
         alias brackets = find_brackets[template]()
+
         @parameter
         if len(brackets) == 0:
             # No brackets found, just replace the template.
             return self.replace[template](time)
         elif len(brackets) == 1:
             return String(
-                self.replace[template[:brackets[0][0]]](time),
-                template[brackets[0][0]+1:brackets[0][1]],
-                self.replace[template[brackets[0][1]+1:]](time)
+                self.replace[template[: brackets[0][0]]](time),
+                template[brackets[0][0] + 1 : brackets[0][1]],
+                self.replace[template[brackets[0][1] + 1 :]](time),
             )
-        
-        var result = String(self.replace[template[:brackets[0][0]]](time), template[brackets[0][0]+1:brackets[0][1]])
+
+        var result = String(
+            self.replace[template[: brackets[0][0]]](time), template[brackets[0][0] + 1 : brackets[0][1]]
+        )
+
         @parameter
         for i in range(1, len(brackets)):
             alias start = brackets[i][0]
             alias end = brackets[i][1]
-            result.write(
-                self.replace[template[brackets[i-1][1]+1:start]](time),
-                template[start+1:end]
-            )
-        
+            result.write(self.replace[template[brackets[i - 1][1] + 1 : start]](time), template[start + 1 : end])
+
             @parameter
             if i == len(brackets) - 1:
                 # Replace the last part of the template after the last bracket.
-                result.write(self.replace[template[end+1:]](time))   
+                result.write(self.replace[template[end + 1 :]](time))
         return result^
 
     fn replace[template: StringSlice](self, time: SmallTime) -> String:
@@ -195,10 +197,11 @@ struct _Formatter:
 
         Args:
             time: SmallTime datetime to replace tokens in.
-        
+
         Returns:
             Formatted time string.
         """
+
         @parameter
         if len(template) == 0:
             return String()
@@ -207,6 +210,7 @@ struct _Formatter:
         var matched_count = 0
 
         var result = String()
+
         @parameter
         for i in range(len(template)):
             var byte = ord(template[i])
@@ -242,7 +246,7 @@ struct _Formatter:
             time: SmallTime datetime to replace tokens in.
             token: The token to replace.
             token_count: The number of times the token appears in the format string.
-        
+
         Returns:
             The string representation of the token value.
         """
