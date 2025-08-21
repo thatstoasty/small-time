@@ -1435,6 +1435,7 @@ packages:
   - python >=3.9
   - python
   license: MIT
+  license_family: MIT
   size: 77346
   timestamp: 1755547637982
 - conda: https://conda.anaconda.org/conda-forge/noarch/typer-slim-0.16.1-pyhe01879c_0.conda
@@ -1450,6 +1451,7 @@ packages:
   - rich >=10.11.0
   - shellingham >=1.3.0
   license: MIT
+  license_family: MIT
   size: 46871
   timestamp: 1755547637982
 - conda: https://conda.anaconda.org/conda-forge/noarch/typer-slim-standard-0.16.1-h810d63d_0.conda
@@ -1460,6 +1462,7 @@ packages:
   - rich
   - shellingham
   license: MIT
+  license_family: MIT
   size: 5291
   timestamp: 1755547637982
 - conda: https://conda.anaconda.org/conda-forge/noarch/typing_extensions-4.14.1-pyhe01879c_0.conda
