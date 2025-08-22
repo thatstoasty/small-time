@@ -541,7 +541,6 @@ struct TimeZone(Copyable, ExplicitlyCopyable, Movable):
     alias ASIA_KRASNOYARSK = Self(name="Asia/Krasnoyarsk", offset=25200)
     alias EUROPE_CHISINAU = Self(name="Europe/Chisinau", offset=7200)
     alias INDIAN_COCOS = Self(name="Indian/Cocos", offset=23400)
-    alias AMERICA_INDiana_VINCENNES = Self(name="America/Indiana/Vincennes", offset=-18000)
     alias AMERICA_CAMBRIDGE_BAY = Self(name="America/Cambridge_Bay", offset=-25200)
     alias ASIA_THIMPHU = Self(name="Asia/Thimphu", offset=21600)
     alias EUROPE_RIGA = Self(name="Europe/Riga", offset=7200)
@@ -564,7 +563,7 @@ struct TimeZone(Copyable, ExplicitlyCopyable, Movable):
     alias ASIA_RIYADH = Self(name="Asia/Riyadh", offset=10800)
     alias PACIFIC_EFATE = Self(name="Pacific/Efate", offset=39600)
     alias INDIAN_MAURITIUS = Self(name="Indian/Mauritius", offset=14400)
-    alias INDIAN_KERGULEN = Self(name="Indian/Kerguelen", offset=18000)
+    alias INDIAN_KERGUELEN = Self(name="Indian/Kerguelen", offset=18000)
     alias ASIA_COLOMBO = Self(name="Asia/Colombo", offset=19800)
     alias AFRICA_MASERU = Self(name="Africa/Maseru", offset=7200)
     alias AMERICA_ASUNCION = Self(name="America/Asuncion", offset=-14400)
@@ -1258,7 +1257,7 @@ alias TIMEZONE_MAP: Dict[String, TimeZone] = {
     "Asia/Krasnoyarsk": TimeZone.ASIA_KRASNOYARSK,
     "Europe/Chisinau": TimeZone.EUROPE_CHISINAU,
     "Indian/Cocos": TimeZone.INDIAN_COCOS,
-    "America/Indiana/Vincennes": TimeZone.AMERICA_INDiana_VINCENNES,
+    "America/Indiana/Vincennes": TimeZone.AMERICA_INDIANA_VINCENNES,
     "America/Cambridge_Bay": TimeZone.AMERICA_CAMBRIDGE_BAY,
     "Asia/Thimphu": TimeZone.ASIA_THIMPHU,
     "Europe/Riga": TimeZone.EUROPE_RIGA,
@@ -1281,7 +1280,7 @@ alias TIMEZONE_MAP: Dict[String, TimeZone] = {
     "Asia/Riyadh": TimeZone.ASIA_RIYADH,
     "Pacific/Efate": TimeZone.PACIFIC_EFATE,
     "Indian/Mauritius": TimeZone.INDIAN_MAURITIUS,
-    "Indian/Kerguelen": TimeZone.INDIAN_KERGULEN,
+    "Indian/Kerguelen": TimeZone.INDIAN_KERGUELEN,
     "Asia/Colombo": TimeZone.ASIA_COLOMBO,
     "Africa/Maseru": TimeZone.AFRICA_MASERU,
     "America/Asuncion": TimeZone.AMERICA_ASUNCION,
