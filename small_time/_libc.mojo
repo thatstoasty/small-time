@@ -1,6 +1,7 @@
-from sys import external_call, os_is_macos, os_is_windows
-from sys.ffi import c_uchar, c_int, c_long, c_char
 import sys._libc as libc
+from sys import CompilationTarget, external_call
+from sys.ffi import c_char, c_int, c_long, c_uchar
+
 from memory import UnsafePointer
 
 
@@ -226,8 +227,8 @@ fn parse_time_with_format(mut time: String, mut format: String) raises -> _CTime
     """
     var tm = InlineArray[_CTime, 1](uninitialized=True)
     _ = _strptime(
-        time.unsafe_cstr_ptr().origin_cast[mut=False](),
-        format.unsafe_cstr_ptr().origin_cast[mut=False](),
+        time.unsafe_cstr_ptr(),
+        format.unsafe_cstr_ptr(),
         tm.unsafe_ptr(),
     )
     if not tm.unsafe_ptr():
@@ -235,7 +236,7 @@ fn parse_time_with_format(mut time: String, mut format: String) raises -> _CTime
             "parse_time_with_format failed: The pointer to the result is still null, which indicates the parsing"
             " failed."
         )
-    print("Parsed time: ", tm[0])
+
     return tm[0].copy()
 
 
@@ -289,12 +290,12 @@ fn get_errno() -> c_int:
     """
 
     @parameter
-    if os_is_windows():
+    if CompilationTarget.is_windows():
         var errno = InlineArray[c_int, 1]()
         _ = external_call["_get_errno", c_void](errno.unsafe_ptr())
         return errno[0]
     else:
-        alias loc = "__error" if os_is_macos() else "__errno_location"
+        alias loc = "__error" if CompilationTarget.is_macos() else "__errno_location"
         return external_call[loc, UnsafePointer[c_int]]()[]
 
 
@@ -335,28 +336,28 @@ alias EPIPE = 32
 alias EDOM = 33
 alias ERANGE = 34
 alias EWOULDBLOCK = EAGAIN
-alias EINPROGRESS = 36 if os_is_macos() else 115
-alias EALREADY = 37 if os_is_macos() else 114
-alias ENOTSOCK = 38 if os_is_macos() else 88
-alias EDESTADDRREQ = 39 if os_is_macos() else 89
-alias EMSGSIZE = 40 if os_is_macos() else 90
-alias ENOPROTOOPT = 42 if os_is_macos() else 92
-alias EAFNOSUPPORT = 47 if os_is_macos() else 97
-alias EADDRINUSE = 48 if os_is_macos() else 98
-alias EADDRNOTAVAIL = 49 if os_is_macos() else 99
-alias ENETDOWN = 50 if os_is_macos() else 100
-alias ENETUNREACH = 51 if os_is_macos() else 101
-alias ECONNABORTED = 53 if os_is_macos() else 103
-alias ECONNRESET = 54 if os_is_macos() else 104
-alias ENOBUFS = 55 if os_is_macos() else 105
-alias EISCONN = 56 if os_is_macos() else 106
-alias ENOTCONN = 57 if os_is_macos() else 107
-alias ETIMEDOUT = 60 if os_is_macos() else 110
-alias ECONNREFUSED = 61 if os_is_macos() else 111
-alias ELOOP = 62 if os_is_macos() else 40
-alias ENAMETOOLONG = 63 if os_is_macos() else 36
-alias EHOSTUNREACH = 65 if os_is_macos() else 113
-alias EDQUOT = 69 if os_is_macos() else 122
-alias ENOMSG = 91 if os_is_macos() else 42
-alias EPROTO = 100 if os_is_macos() else 71
-alias EOPNOTSUPP = 102 if os_is_macos() else 95
+alias EINPROGRESS = 36 if CompilationTarget.is_macos() else 115
+alias EALREADY = 37 if CompilationTarget.is_macos() else 114
+alias ENOTSOCK = 38 if CompilationTarget.is_macos() else 88
+alias EDESTADDRREQ = 39 if CompilationTarget.is_macos() else 89
+alias EMSGSIZE = 40 if CompilationTarget.is_macos() else 90
+alias ENOPROTOOPT = 42 if CompilationTarget.is_macos() else 92
+alias EAFNOSUPPORT = 47 if CompilationTarget.is_macos() else 97
+alias EADDRINUSE = 48 if CompilationTarget.is_macos() else 98
+alias EADDRNOTAVAIL = 49 if CompilationTarget.is_macos() else 99
+alias ENETDOWN = 50 if CompilationTarget.is_macos() else 100
+alias ENETUNREACH = 51 if CompilationTarget.is_macos() else 101
+alias ECONNABORTED = 53 if CompilationTarget.is_macos() else 103
+alias ECONNRESET = 54 if CompilationTarget.is_macos() else 104
+alias ENOBUFS = 55 if CompilationTarget.is_macos() else 105
+alias EISCONN = 56 if CompilationTarget.is_macos() else 106
+alias ENOTCONN = 57 if CompilationTarget.is_macos() else 107
+alias ETIMEDOUT = 60 if CompilationTarget.is_macos() else 110
+alias ECONNREFUSED = 61 if CompilationTarget.is_macos() else 111
+alias ELOOP = 62 if CompilationTarget.is_macos() else 40
+alias ENAMETOOLONG = 63 if CompilationTarget.is_macos() else 36
+alias EHOSTUNREACH = 65 if CompilationTarget.is_macos() else 113
+alias EDQUOT = 69 if CompilationTarget.is_macos() else 122
+alias ENOMSG = 91 if CompilationTarget.is_macos() else 42
+alias EPROTO = 100 if CompilationTarget.is_macos() else 71
+alias EOPNOTSUPP = 102 if CompilationTarget.is_macos() else 95

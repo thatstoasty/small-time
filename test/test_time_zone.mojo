@@ -1,5 +1,5 @@
 import testing
-from small_time.time_zone import TimeZone, from_utc, TIMEZONE_MAP
+from small_time.time_zone import TIMEZONE_MAP, TimeZone, from_utc
 
 
 def test_time_zone():

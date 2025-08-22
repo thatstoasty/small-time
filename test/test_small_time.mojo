@@ -1,10 +1,10 @@
-import testing
-from python import PythonObject
-from _py import py_dt_datetime, py_time
-
 import small_time._libc as libc
-from small_time.small_time import SmallTime, now, parse_time_with_format, from_timestamp, from_ordinal, Specification
-from small_time.time_zone import TimeZone, from_utc, TIMEZONE_MAP
+import testing
+from _py import py_dt_datetime, py_time
+from python import PythonObject
+from small_time.time_zone import TIMEZONE_MAP, TimeZone, from_utc
+
+from small_time.small_time import SmallTime, Specification, from_ordinal, from_timestamp, now, parse_time_with_format
 
 
 # TODO: Need a better way to test this, since it's not deterministic.

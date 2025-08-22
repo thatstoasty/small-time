@@ -1,8 +1,8 @@
 import small_time._libc as libc
 import small_time.time_zone
 from small_time._formatter import FORMATTER
-from small_time.time_delta import TimeDelta
 from small_time.calendar_math import _DAYS_BEFORE_MONTH, ymd_to_ordinal
+from small_time.time_delta import TimeDelta
 
 
 alias DAYS_IN_400_YEARS = 146097
