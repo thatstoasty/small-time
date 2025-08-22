@@ -227,8 +227,8 @@ fn parse_time_with_format(mut time: String, mut format: String) raises -> _CTime
     """
     var tm = InlineArray[_CTime, 1](uninitialized=True)
     _ = _strptime(
-        time.unsafe_cstr_ptr().origin_cast[mut=False](),
-        format.unsafe_cstr_ptr().origin_cast[mut=False](),
+        time.unsafe_cstr_ptr(),
+        format.unsafe_cstr_ptr(),
         tm.unsafe_ptr(),
     )
     if not tm.unsafe_ptr():
@@ -236,7 +236,7 @@ fn parse_time_with_format(mut time: String, mut format: String) raises -> _CTime
             "parse_time_with_format failed: The pointer to the result is still null, which indicates the parsing"
             " failed."
         )
-    print("Parsed time: ", tm[0])
+
     return tm[0].copy()
 
 
