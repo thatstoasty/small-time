@@ -19,7 +19,7 @@ alias MAX_TIMESTAMP_US = MAX_TIMESTAMP * 1_000_000
 """Maximum timestamp in microseconds."""
 
 
-fn normalize_timestamp(owned timestamp: Float64) raises -> Float64:
+fn normalize_timestamp(var timestamp: Float64) raises -> Float64:
     """Normalize millisecond and microsecond timestamps into normal timestamps.
 
     Args:
@@ -49,6 +49,9 @@ fn now(*, utc: Bool = False) raises -> SmallTime:
 
     Returns:
         The current time.
+
+    Raises:
+        Error: If unable to get the current time via C.
     """
     return from_timestamp(libc.get_time_of_day(), utc=utc)
 
@@ -150,7 +153,7 @@ fn parse_time_with_format(date: StringSlice, format: StringSlice, tzinfo: TimeZo
     """Create a `SmallTime` instance from a date string and format,
     in the style of `datetime.strptime`. Optionally replaces the parsed time_zone.
     Due to cstr pointer creation requiring a mutable reference to `date` and `format` to null terminate them,
-    this function will allocate owned copies of the strings.
+    this function will allocate var copies of the strings.
 
     Args:
         date: The date string.
@@ -179,7 +182,7 @@ fn parse_time_with_format(date: StringSlice, format: StringSlice, tz: StringSlic
     """Create a `SmallTime` instance from a date string and format,
     in the style of `datetime.strptime`. Optionally replaces the parsed time_zone.
     Due to cstr pointer creation requiring a mutable reference to `date` and `format` to null terminate them,
-    this function will allocate owned copies of the strings.
+    this function will allocate var copies of the strings.
 
     Args:
         date: The date string.
@@ -286,7 +289,7 @@ fn from_ordinal(ordinal: Int) -> SmallTime:
 
 @fieldwise_init
 @register_passable("trivial")
-struct Specification(Copyable, EqualityComparable, ExplicitlyCopyable, Movable):
+struct Specification(Copyable, EqualityComparable, ImplicitlyCopyable, Movable):
     """Time specification for the `SmallTime.isoformat` method."""
 
     var value: Int
@@ -327,7 +330,7 @@ struct Specification(Copyable, EqualityComparable, ExplicitlyCopyable, Movable):
         return self.value != other.value
 
 
-struct SmallTime(Copyable, ExplicitlyCopyable, Movable, Representable, Stringable, Writable):
+struct SmallTime(Copyable, ImplicitlyCopyable, Movable, Representable, Stringable, Writable):
     """Datetime representation."""
 
     var year: Int

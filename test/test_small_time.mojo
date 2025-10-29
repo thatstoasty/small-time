@@ -20,16 +20,16 @@ def assert_datetime_equal(dt: SmallTime, py_dt: PythonObject):
 
 
 def test_now():
-    assert_datetime_equal(now(), py_dt_datetime().now())
+    assert_datetime_equal(py_dt=py_dt_datetime().now(), dt=now())
 
 
 def test_utc_now():
-    assert_datetime_equal(now(utc=True), py_dt_datetime().utcnow())
+    assert_datetime_equal(py_dt=py_dt_datetime().utcnow(), dt=now(utc=True))
 
 
 def test_from_timestamp():
-    assert_datetime_equal(from_timestamp(Float64(libc.get_time_of_day().seconds)), py_dt_datetime().now())
-    assert_datetime_equal(from_timestamp(Float64(libc.get_time_of_day().seconds), utc=True), py_dt_datetime().utcnow())
+    assert_datetime_equal(py_dt=py_dt_datetime().now(), dt=from_timestamp(Float64(libc.get_time_of_day().seconds)))
+    assert_datetime_equal(py_dt=py_dt_datetime().utcnow(), dt=from_timestamp(Float64(libc.get_time_of_day().seconds), utc=True))
 
 
 def test_iso_format():
@@ -39,7 +39,7 @@ def test_iso_format():
     testing.assert_equal(d0.isoformat[Specification.MILLISECONDS](), "2023-10-01T00:00:00.001+00:00")
 
     # with TimeZone
-    var d1 = SmallTime(2023, 10, 1, 0, 0, 0, 1234, TIMEZONE_MAP["Asia/Shanghai"])
+    var d1 = SmallTime(2023, 10, 1, 0, 0, 0, 1234, materialize[TIMEZONE_MAP]()["Asia/Shanghai"])
     # var d1 = SmallTime(2023, 10, 1, 0, 0, 0, 1234, TimeZone.ASIA_SHANGHAI)
     testing.assert_equal(d1.isoformat[Specification.SECONDS](), "2023-10-01T00:00:00+08:00")
 
@@ -69,7 +69,7 @@ def test_ordinal():
 
 
 def test_sub():
-    alias rhs = SmallTime(2023, 10, 1, 10, 0, 0)
+    var rhs = SmallTime(2023, 10, 1, 10, 0, 0)
     var result = SmallTime(2023, 10, 1, 10, 0, 0, 1) - rhs
     testing.assert_equal(result.microseconds, 1)
     testing.assert_equal(String(result), "0:00:00000001")
