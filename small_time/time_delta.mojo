@@ -2,7 +2,7 @@ alias SECONDS_OF_DAY = 24 * 3600
 
 
 @register_passable("trivial")
-struct TimeDelta(Copyable, ExplicitlyCopyable, Movable, Stringable):
+struct TimeDelta(Copyable, ImplicitlyCopyable, Movable, Stringable):
     """Time delta."""
 
     var days: Int

@@ -15,7 +15,7 @@ alias c_void = UInt8
 
 @fieldwise_init
 @register_passable("trivial")
-struct _CTimeValue(Copyable, ExplicitlyCopyable, Movable):
+struct _CTimeValue(Copyable, ImplicitlyCopyable, Movable):
     """C `TimeValue` struct."""
 
     var seconds: time_t
@@ -26,7 +26,7 @@ struct _CTimeValue(Copyable, ExplicitlyCopyable, Movable):
 
 @fieldwise_init
 @register_passable("trivial")
-struct _CTimeZone(Copyable, ExplicitlyCopyable, Movable):
+struct _CTimeZone(Copyable, ImplicitlyCopyable, Movable):
     """C `timezone` struct."""
 
     var minutes_west: c_int
@@ -37,7 +37,7 @@ struct _CTimeZone(Copyable, ExplicitlyCopyable, Movable):
 
 @fieldwise_init
 # @register_passable("trivial")
-struct _CTime(Copyable, ExplicitlyCopyable, Movable, Writable):
+struct _CTime(Copyable, ImplicitlyCopyable, Movable, Writable):
     """C `tm` struct."""
 
     var seconds: c_int
@@ -176,7 +176,7 @@ fn get_local_time(seconds_since_epoch: time_t) raises -> _CTime:
         raise Error(
             "get_local_time failed: The pointer to the result is still null, which indicates the conversion failed."
         )
-    return result[0]
+    return result[0].copy()
 
 
 fn _strptime(

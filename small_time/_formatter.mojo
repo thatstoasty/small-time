@@ -102,24 +102,34 @@ struct Token:
         return self.char == other
 
 
-fn find_brackets[template: StringSlice]() -> List[List[Int]]:
+@fieldwise_init
+struct BracketBounds(Copyable, ImplicitlyCopyable, Movable):
+    """Bracket bounds."""
+
+    var start: Int
+    """Start index of the bracket."""
+    var end: Int
+    """End index of the bracket."""
+
+
+fn find_brackets[template: StringSlice]() -> List[BracketBounds]:
     """Finds the start index of the first bracket in the template."""
     var in_bracket = False
-    var brackets: List[List[Int]] = []
+    var brackets: List[BracketBounds] = []
 
     @parameter
     for i in range(len(template)):
         if template[i] == "[" and not in_bracket:
-            brackets.append([i, -1])
+            brackets.append(BracketBounds(i, -1))
             in_bracket = True
         elif template[i] == "]" and in_bracket:
-            brackets[-1][1] = i
+            brackets[-1].end = i
             in_bracket = False
 
     return brackets^
 
 
-struct _Formatter:
+struct _Formatter(Copyable, ImplicitlyCopyable, Movable):
     """SmallTime formatter."""
 
     var sub_characters: InlineArray[Int, 128]
@@ -161,27 +171,27 @@ struct _Formatter:
             return String()
 
         alias brackets = find_brackets[template]()
+        var b = materialize[brackets]()
 
         @parameter
         if len(brackets) == 0:
             # No brackets found, just replace the template.
             return self.replace[template](time)
+        # TODO: Figure out how to have a global LUT instead of materializing a new one every time.
         elif len(brackets) == 1:
             return String(
-                self.replace[template[: brackets[0][0]]](time),
-                template[brackets[0][0] + 1 : brackets[0][1]],
-                self.replace[template[brackets[0][1] + 1 :]](time),
+                self.replace[template[: brackets[0].start]](time),
+                template[b[0].start + 1 : b[0].end],
+                self.replace[template[brackets[0].end + 1 :]](time),
             )
 
-        var result = String(
-            self.replace[template[: brackets[0][0]]](time), template[brackets[0][0] + 1 : brackets[0][1]]
-        )
+        var result = String(self.replace[template[: brackets[0].start]](time), template[b[0].start + 1 : b[0].end])
 
         @parameter
         for i in range(1, len(brackets)):
-            alias start = brackets[i][0]
-            alias end = brackets[i][1]
-            result.write(self.replace[template[brackets[i - 1][1] + 1 : start]](time), template[start + 1 : end])
+            alias start = brackets[i].start
+            alias end = brackets[i].end
+            result.write(self.replace[template[brackets[i - 1].end + 1 : start]](time), template[start + 1 : end])
 
             @parameter
             if i == len(brackets) - 1:

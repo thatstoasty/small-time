@@ -14,9 +14,9 @@ def test_time_zone():
 
 def test_time_zone_from_name():
     # Test with a known time zone
-    tz = TIMEZONE_MAP["Asia/Shanghai"]
+    tz = materialize[TIMEZONE_MAP]()["Asia/Shanghai"]
     testing.assert_equal(tz.name, "Asia/Shanghai")
     testing.assert_equal(tz.offset, 28800)  # +08:00 in seconds
 
     # Test with an invalid time zone
-    testing.assert_false(TIMEZONE_MAP.get("Invalid/TimeZone"))
+    testing.assert_false(materialize[TIMEZONE_MAP]().get("Invalid/TimeZone"))

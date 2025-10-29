@@ -64,7 +64,7 @@ fn from_utc(timestamp: StringSlice) raises -> TimeZone:
 
 
 @fieldwise_init
-struct TimeZone(Copyable, ExplicitlyCopyable, Movable):
+struct TimeZone(Copyable, ImplicitlyCopyable, Movable):
     """Time zone representation."""
 
     var name: String
@@ -660,6 +660,9 @@ struct TimeZone(Copyable, ExplicitlyCopyable, Movable):
 
         Returns:
             A new timezone instance.
+
+        Raises:
+            Error: If an unsupported UTC offset is provided.
         """
         if offset == 0:
             return Self.UTC
