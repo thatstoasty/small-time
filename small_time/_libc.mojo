@@ -1,16 +1,17 @@
 import sys._libc as libc
 from sys import CompilationTarget, external_call
-from sys.ffi import c_char, c_int, c_long, c_uchar
-
-from memory import UnsafePointer
+from sys.ffi import c_char, c_int, c_long, c_uchar, get_errno
 
 
-alias time_t = Int64
+comptime time_t = Int64
 """C `time_t` type, representing time in seconds since the Epoch (1970-01-01 00:00:00 UTC)."""
-alias suseconds_t = time_t
+comptime suseconds_t = time_t
 """C `suseconds_t` type, representing microseconds. It is typically the same as `time_t`."""
-alias c_void = UInt8
+comptime c_void = UInt8
 """C `void` type, used for generic pointers."""
+
+alias ImmutExternalUnsafePointer = UnsafePointer[origin = ImmutOrigin.external]
+alias MutExternalUnsafePointer = UnsafePointer[origin = MutOrigin.external]
 
 
 @fieldwise_init
@@ -36,7 +37,6 @@ struct _CTimeZone(Copyable, ImplicitlyCopyable, Movable):
 
 
 @fieldwise_init
-# @register_passable("trivial")
 struct _CTime(Copyable, ImplicitlyCopyable, Movable, Writable):
     """C `tm` struct."""
 
@@ -62,7 +62,7 @@ struct _CTime(Copyable, ImplicitlyCopyable, Movable, Writable):
     zero if it is not, and negative if the information is not available."""
     var time_zone_offset: c_long
     """The difference, in seconds, of the timezone represented by this broken-down time and UTC"""
-    var time_zone: UnsafePointer[c_char]
+    var time_zone: ImmutExternalUnsafePointer[c_char]
     """Pointer to a string representing the timezone name, e.g. "UTC", "America/New_York"."""
 
     fn __init__(out self):
@@ -77,7 +77,7 @@ struct _CTime(Copyable, ImplicitlyCopyable, Movable, Writable):
         self.day_of_year = 0
         self.is_daylight_savings = 0
         self.time_zone_offset = 0
-        self.time_zone = UnsafePointer[c_char, mut=False]()
+        self.time_zone = ImmutExternalUnsafePointer[c_char]()
 
     fn write_to[T: Writer, //](self, mut writer: T):
         """Writes the time struct to a writer."""
@@ -97,7 +97,7 @@ struct _CTime(Copyable, ImplicitlyCopyable, Movable, Writable):
         writer.write(")")
 
 
-fn _gettimeofday(tv: UnsafePointer[_CTimeValue], tz: UnsafePointer[_CTimeZone]) -> Int32:
+fn _gettimeofday(tv: MutUnsafePointer[_CTimeValue], tz: MutUnsafePointer[_CTimeZone]) -> c_int:
     """Gets the current time. It's a wrapper around libc `gettimeofday`.
     The `tv` parameter is a pointer to a `struct timeval` that will be filled.
 
@@ -114,7 +114,7 @@ fn _gettimeofday(tv: UnsafePointer[_CTimeValue], tz: UnsafePointer[_CTimeZone]) 
     int gettimeofday(struct timeval *restrict tv, struct timezone *_Nullable restrict tz);
     ```
     """
-    return external_call["gettimeofday", Int32, UnsafePointer[_CTimeValue], UnsafePointer[_CTimeZone]](tv, tz)
+    return external_call["gettimeofday", c_int, type_of(tv), type_of(tz)](tv, tz)
 
 
 fn get_time_of_day() raises -> _CTimeValue:
@@ -133,7 +133,7 @@ fn get_time_of_day() raises -> _CTimeValue:
     var result = _gettimeofday(tv.unsafe_ptr(), tz.unsafe_ptr())
     if result != 0:
         var errno = get_errno()
-        if errno == EFAULT:
+        if errno == errno.EFAULT:
             raise Error(
                 "[EFAULT] gettimeofday failed: One of `tv` or `tz` pointed outside the accessible address space."
             )
@@ -142,7 +142,7 @@ fn get_time_of_day() raises -> _CTimeValue:
     return tv[0].copy()
 
 
-fn _localtime_r(timep: UnsafePointer[time_t, mut=False], result: UnsafePointer[_CTime]) -> None:
+fn _localtime_r(timep: ImmutUnsafePointer[time_t], result: UnsafePointer[_CTime]) -> None:
     """Converts a time value to a broken-down local time.
 
     Args:
@@ -154,9 +154,7 @@ fn _localtime_r(timep: UnsafePointer[time_t, mut=False], result: UnsafePointer[_
     struct tm *localtime_r(const time_t *timep, struct tm *result);
     ```
     """
-    _ = external_call["localtime_r", UnsafePointer[_CTime], UnsafePointer[time_t, mut=False], UnsafePointer[_CTime]](
-        timep, result
-    )
+    _ = external_call["localtime_r", ImmutExternalUnsafePointer[_CTime], type_of(timep), type_of(result)](timep, result)
 
 
 fn get_local_time(seconds_since_epoch: time_t) raises -> _CTime:
@@ -171,7 +169,7 @@ fn get_local_time(seconds_since_epoch: time_t) raises -> _CTime:
     ```
     """
     var result = InlineArray[_CTime, 1](uninitialized=True)
-    _localtime_r(UnsafePointer[mut=False](to=seconds_since_epoch), result.unsafe_ptr())
+    _localtime_r(UnsafePointer(to=seconds_since_epoch), result.unsafe_ptr())
     if not result.unsafe_ptr():
         raise Error(
             "get_local_time failed: The pointer to the result is still null, which indicates the conversion failed."
@@ -180,8 +178,8 @@ fn get_local_time(seconds_since_epoch: time_t) raises -> _CTime:
 
 
 fn _strptime(
-    buf: UnsafePointer[c_char, mut=False], format: UnsafePointer[c_char, mut=False], tm: UnsafePointer[_CTime]
-) -> UnsafePointer[c_char]:
+    buf: ImmutUnsafePointer[c_char], format: ImmutUnsafePointer[c_char], tm: UnsafePointer[_CTime]
+) -> MutExternalUnsafePointer[c_char]:
     """Parses a time string according to a format string.
 
     Args:
@@ -201,10 +199,10 @@ fn _strptime(
     """
     return external_call[
         "strptime",
-        UnsafePointer[c_char],
-        UnsafePointer[c_char, mut=False],
-        UnsafePointer[c_char, mut=False],
-        UnsafePointer[_CTime],
+        MutExternalUnsafePointer[c_char],
+        type_of(buf),
+        type_of(format),
+        type_of(tm),
     ](buf, format, tm)
 
 
@@ -240,7 +238,7 @@ fn parse_time_with_format(mut time: String, mut format: String) raises -> _CTime
     return tm[0].copy()
 
 
-fn _gmtime(timep: UnsafePointer[time_t, mut=False]) -> UnsafePointer[_CTime]:
+fn _gmtime(timep: ImmutUnsafePointer[time_t]) -> MutExternalUnsafePointer[_CTime]:
     """Converts a time value to a broken-down UTC time.
 
     Args:
@@ -254,7 +252,7 @@ fn _gmtime(timep: UnsafePointer[time_t, mut=False]) -> UnsafePointer[_CTime]:
     struct tm *gmtime(const time_t *timep);
     ```
     """
-    return external_call["gmtime", UnsafePointer[_CTime], UnsafePointer[time_t, mut=False]](timep)
+    return external_call["gmtime", MutExternalUnsafePointer[_CTime], type_of(timep)](timep)
 
 
 fn get_gm_time(time: time_t) raises -> _CTime:
@@ -281,83 +279,65 @@ fn get_gm_time(time: time_t) raises -> _CTime:
     return result.take_pointee()
 
 
-fn get_errno() -> c_int:
-    """Get a copy of the current value of the `errno` global variable for
-    the current thread.
-
-    Returns:
-        A copy of the current value of `errno` for the current thread.
-    """
-
-    @parameter
-    if CompilationTarget.is_windows():
-        var errno = InlineArray[c_int, 1]()
-        _ = external_call["_get_errno", c_void](errno.unsafe_ptr())
-        return errno[0]
-    else:
-        alias loc = "__error" if CompilationTarget.is_macos() else "__errno_location"
-        return external_call[loc, UnsafePointer[c_int]]()[]
-
-
 # --- ( error.h Constants )-----------------------------------------------------
 # TODO: These are probably platform specific, we should check the values on each linux and macos.
-alias EPERM = 1
-alias ENOENT = 2
-alias ESRCH = 3
-alias EINTR = 4
-alias EIO = 5
-alias ENXIO = 6
-alias E2BIG = 7
-alias ENOEXEC = 8
-alias EBADF = 9
-alias ECHILD = 10
-alias EAGAIN = 11
-alias ENOMEM = 12
-alias EACCES = 13
-alias EFAULT = 14
-alias ENOTBLK = 15
-alias EBUSY = 16
-alias EEXIST = 17
-alias EXDEV = 18
-alias ENODEV = 19
-alias ENOTDIR = 20
-alias EISDIR = 21
-alias EINVAL = 22
-alias ENFILE = 23
-alias EMFILE = 24
-alias ENOTTY = 25
-alias ETXTBSY = 26
-alias EFBIG = 27
-alias ENOSPC = 28
-alias ESPIPE = 29
-alias EROFS = 30
-alias EMLINK = 31
-alias EPIPE = 32
-alias EDOM = 33
-alias ERANGE = 34
-alias EWOULDBLOCK = EAGAIN
-alias EINPROGRESS = 36 if CompilationTarget.is_macos() else 115
-alias EALREADY = 37 if CompilationTarget.is_macos() else 114
-alias ENOTSOCK = 38 if CompilationTarget.is_macos() else 88
-alias EDESTADDRREQ = 39 if CompilationTarget.is_macos() else 89
-alias EMSGSIZE = 40 if CompilationTarget.is_macos() else 90
-alias ENOPROTOOPT = 42 if CompilationTarget.is_macos() else 92
-alias EAFNOSUPPORT = 47 if CompilationTarget.is_macos() else 97
-alias EADDRINUSE = 48 if CompilationTarget.is_macos() else 98
-alias EADDRNOTAVAIL = 49 if CompilationTarget.is_macos() else 99
-alias ENETDOWN = 50 if CompilationTarget.is_macos() else 100
-alias ENETUNREACH = 51 if CompilationTarget.is_macos() else 101
-alias ECONNABORTED = 53 if CompilationTarget.is_macos() else 103
-alias ECONNRESET = 54 if CompilationTarget.is_macos() else 104
-alias ENOBUFS = 55 if CompilationTarget.is_macos() else 105
-alias EISCONN = 56 if CompilationTarget.is_macos() else 106
-alias ENOTCONN = 57 if CompilationTarget.is_macos() else 107
-alias ETIMEDOUT = 60 if CompilationTarget.is_macos() else 110
-alias ECONNREFUSED = 61 if CompilationTarget.is_macos() else 111
-alias ELOOP = 62 if CompilationTarget.is_macos() else 40
-alias ENAMETOOLONG = 63 if CompilationTarget.is_macos() else 36
-alias EHOSTUNREACH = 65 if CompilationTarget.is_macos() else 113
-alias EDQUOT = 69 if CompilationTarget.is_macos() else 122
-alias ENOMSG = 91 if CompilationTarget.is_macos() else 42
-alias EPROTO = 100 if CompilationTarget.is_macos() else 71
-alias EOPNOTSUPP = 102 if CompilationTarget.is_macos() else 95
+comptime EPERM = 1
+comptime ENOENT = 2
+comptime ESRCH = 3
+comptime EINTR = 4
+comptime EIO = 5
+comptime ENXIO = 6
+comptime E2BIG = 7
+comptime ENOEXEC = 8
+comptime EBADF = 9
+comptime ECHILD = 10
+comptime EAGAIN = 11
+comptime ENOMEM = 12
+comptime EACCES = 13
+comptime EFAULT = 14
+comptime ENOTBLK = 15
+comptime EBUSY = 16
+comptime EEXIST = 17
+comptime EXDEV = 18
+comptime ENODEV = 19
+comptime ENOTDIR = 20
+comptime EISDIR = 21
+comptime EINVAL = 22
+comptime ENFILE = 23
+comptime EMFILE = 24
+comptime ENOTTY = 25
+comptime ETXTBSY = 26
+comptime EFBIG = 27
+comptime ENOSPC = 28
+comptime ESPIPE = 29
+comptime EROFS = 30
+comptime EMLINK = 31
+comptime EPIPE = 32
+comptime EDOM = 33
+comptime ERANGE = 34
+comptime EWOULDBLOCK = EAGAIN
+comptime EINPROGRESS = 36 if CompilationTarget.is_macos() else 115
+comptime EALREADY = 37 if CompilationTarget.is_macos() else 114
+comptime ENOTSOCK = 38 if CompilationTarget.is_macos() else 88
+comptime EDESTADDRREQ = 39 if CompilationTarget.is_macos() else 89
+comptime EMSGSIZE = 40 if CompilationTarget.is_macos() else 90
+comptime ENOPROTOOPT = 42 if CompilationTarget.is_macos() else 92
+comptime EAFNOSUPPORT = 47 if CompilationTarget.is_macos() else 97
+comptime EADDRINUSE = 48 if CompilationTarget.is_macos() else 98
+comptime EADDRNOTAVAIL = 49 if CompilationTarget.is_macos() else 99
+comptime ENETDOWN = 50 if CompilationTarget.is_macos() else 100
+comptime ENETUNREACH = 51 if CompilationTarget.is_macos() else 101
+comptime ECONNABORTED = 53 if CompilationTarget.is_macos() else 103
+comptime ECONNRESET = 54 if CompilationTarget.is_macos() else 104
+comptime ENOBUFS = 55 if CompilationTarget.is_macos() else 105
+comptime EISCONN = 56 if CompilationTarget.is_macos() else 106
+comptime ENOTCONN = 57 if CompilationTarget.is_macos() else 107
+comptime ETIMEDOUT = 60 if CompilationTarget.is_macos() else 110
+comptime ECONNREFUSED = 61 if CompilationTarget.is_macos() else 111
+comptime ELOOP = 62 if CompilationTarget.is_macos() else 40
+comptime ENAMETOOLONG = 63 if CompilationTarget.is_macos() else 36
+comptime EHOSTUNREACH = 65 if CompilationTarget.is_macos() else 113
+comptime EDQUOT = 69 if CompilationTarget.is_macos() else 122
+comptime ENOMSG = 91 if CompilationTarget.is_macos() else 42
+comptime EPROTO = 100 if CompilationTarget.is_macos() else 71
+comptime EOPNOTSUPP = 102 if CompilationTarget.is_macos() else 95

@@ -3,14 +3,15 @@ import testing
 from _py import py_dt_datetime, py_time
 from python import PythonObject
 from small_time.time_zone import TIMEZONE_MAP, TimeZone, from_utc
+from testing import TestSuite
 
 from small_time.small_time import SmallTime, Specification, from_ordinal, from_timestamp, now, parse_time_with_format
 
 
 # TODO: Need a better way to test this, since it's not deterministic.
-def assert_datetime_equal(dt: SmallTime, py_dt: PythonObject):
+fn assert_datetime_equal(dt: SmallTime, py_dt: PythonObject) raises:
     testing.assert_true(
-        dt.year == Int(py_dt.year)
+        dt.year == UInt(Int(py_dt.year))
         and dt.month == Int(py_dt.month)
         and dt.hour == Int(py_dt.hour)
         and dt.minute == Int(py_dt.minute)
@@ -19,20 +20,20 @@ def assert_datetime_equal(dt: SmallTime, py_dt: PythonObject):
     )
 
 
-def test_now():
+fn test_now() raises:
     assert_datetime_equal(py_dt=py_dt_datetime().now(), dt=now())
 
 
-def test_utc_now():
+fn test_utc_now() raises:
     assert_datetime_equal(py_dt=py_dt_datetime().utcnow(), dt=now(utc=True))
 
 
-def test_from_timestamp():
+fn test_from_timestamp() raises:
     assert_datetime_equal(py_dt=py_dt_datetime().now(), dt=from_timestamp(Float64(libc.get_time_of_day().seconds)))
     assert_datetime_equal(py_dt=py_dt_datetime().utcnow(), dt=from_timestamp(Float64(libc.get_time_of_day().seconds), utc=True))
 
 
-def test_iso_format():
+fn test_iso_format() raises:
     var d0 = SmallTime(2023, 10, 1, 0, 0, 0, 1234)
     testing.assert_equal(d0.isoformat(), "2023-10-01T00:00:00.001234+00:00")
     testing.assert_equal(d0.isoformat[Specification.SECONDS](), "2023-10-01T00:00:00+00:00")
@@ -44,7 +45,7 @@ def test_iso_format():
     testing.assert_equal(d1.isoformat[Specification.SECONDS](), "2023-10-01T00:00:00+08:00")
 
 
-def test_strptime():
+fn test_strptime() raises:
     var m = parse_time_with_format("20-01-2023 15:49:10", "%d-%m-%Y %H:%M:%S")
     testing.assert_equal(String(m), "2023-01-20T15:49:10.000000+00:00")
 
@@ -57,8 +58,8 @@ def test_strptime():
     testing.assert_equal(String(m), "2023-10-18T15:49:10.000000+09:00")
 
 
-def test_ordinal():
-    alias m = SmallTime(2023, 10, 1)
+fn test_ordinal() raises:
+    comptime m = SmallTime(2023, 10, 1)
     var o = m.to_ordinal()
     testing.assert_equal(o, 738794)
 
@@ -68,7 +69,7 @@ def test_ordinal():
     testing.assert_equal(m.day, 1)
 
 
-def test_sub():
+fn test_sub() raises:
     var rhs = SmallTime(2023, 10, 1, 10, 0, 0)
     var result = SmallTime(2023, 10, 1, 10, 0, 0, 1) - rhs
     testing.assert_equal(result.microseconds, 1)
@@ -91,13 +92,17 @@ def test_sub():
     testing.assert_equal(String(result), "2 days, 0:01:01")
 
 
-def test_format():
-    alias time = SmallTime(2024, 2, 1, 3, 4, 5, 123456)
+fn test_format() raises:
+    comptime time = SmallTime(2024, 2, 1, 3, 4, 5, 123456)
     testing.assert_equal(time.format["YYYY-MM-DD HH:mm:ss.SSS ZZ"](), "2024-02-01 03:04:05.123 +00:00")
     testing.assert_equal(time.format["Y-YY-YYY-YYYY M-MM D-DD"](), "Y-24--2024 2-02 1-01")
     testing.assert_equal(time.format["H-HH-h-hh m-mm s-ss"](), "3-03-3-03 4-04 5-05")
     testing.assert_equal(time.format["S-SS-SSS-SSSS-SSSSS-SSSSSS"](), "1-12-123-1234-12345-123456")
     testing.assert_equal(time.format["d-dd-ddd-dddd"](), "4--Thu-Thursday")
+
+
+fn test_format_brackets() raises:
+    comptime time = SmallTime(2024, 2, 1, 3, 4, 5, 123456)
     # "Do" not supported in SmallTime yet, so skipping this test.
     # testing.assert_equal(m.format[
     #     "[It happened on] MMMM Do [in the][ year] YYYY [a long time ago]"
@@ -113,3 +118,7 @@ def test_format():
 
     # Escaping is atomic: brackets inside brackets are treated literally
     testing.assert_equal(time.format["YYYY[Y] [[]MM[]][M]"](), "2024Y [02]M")
+
+
+fn main() raises:
+    TestSuite.discover_tests[__functions_in_module()]().run()

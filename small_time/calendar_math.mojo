@@ -1,4 +1,7 @@
-alias _DAYS_BEFORE_MONTH: InlineArray[Int, 13] = [
+from small_time.util import lut
+
+
+comptime _DAYS_BEFORE_MONTH: InlineArray[UInt16, 13] = [
     -1,
     0,
     31,
@@ -16,11 +19,11 @@ alias _DAYS_BEFORE_MONTH: InlineArray[Int, 13] = [
 """Number of days before each month in a common year."""
 
 
-alias _DAYS_IN_MONTH: InlineArray[Int, 13] = [-1, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+comptime _DAYS_IN_MONTH: InlineArray[UInt8, 13] = [-1, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
 """Number of days in each month, not counting leap years."""
 
 
-fn check_if_leap_year(year: Int) -> Bool:
+fn check_if_leap_year(year: UInt) -> Bool:
     """If the year is a leap year.
 
     Args:
@@ -35,7 +38,7 @@ fn check_if_leap_year(year: Int) -> Bool:
     return year % 4 == 0 and (year % 100 != 0 or year % 400 == 0)
 
 
-fn days_before_next_calendar_year(year: Int) -> Int:
+fn days_before_next_calendar_year(year: UInt) -> UInt:
     """Number of days before January 1st of year.
 
     Args:
@@ -51,7 +54,7 @@ fn days_before_next_calendar_year(year: Int) -> Int:
     return y * 365 + y // 4 - y // 100 + y // 400
 
 
-fn days_in_month(year: Int, month: Int) -> Int:
+fn days_in_month(year: UInt, month: UInt8) -> UInt8:
     """Number of days in a month in a year.
 
     Args:
@@ -66,10 +69,10 @@ fn days_in_month(year: Int, month: Int) -> Int:
     """
     if month == 2 and check_if_leap_year(year):
         return 29
-    return _DAYS_IN_MONTH[month]
+    return lut[_DAYS_IN_MONTH](month)
 
 
-fn days_before_month(year: Int, month: Int) -> Int:
+fn days_before_month(year: UInt, month: UInt8) -> UInt16:
     """Number of days in year preceding first day of month.
 
     Args:
@@ -83,11 +86,11 @@ fn days_before_month(year: Int, month: Int) -> Int:
         year, month -> number of days in year preceding first day of month.
     """
     if month > 2 and check_if_leap_year(year):
-        return _DAYS_BEFORE_MONTH[month] + 1
-    return _DAYS_BEFORE_MONTH[month]
+        return lut[_DAYS_BEFORE_MONTH](month) + 1
+    return lut[_DAYS_BEFORE_MONTH](month)
 
 
-fn ymd_to_ordinal(year: Int, month: Int, day: Int) -> Int:
+fn ymd_to_ordinal(year: UInt, month: UInt8, day: UInt8) -> UInt:
     """Convert year, month, day to ordinal, considering `01-Jan-0001` as day 1.
 
     Args:
@@ -98,4 +101,4 @@ fn ymd_to_ordinal(year: Int, month: Int, day: Int) -> Int:
     Returns:
         Ordinal formatted date, considering `01-Jan-0001` as day 1.
     """
-    return days_before_next_calendar_year(year) + days_before_month(year, month) + day
+    return days_before_next_calendar_year(year) + UInt(days_before_month(year, month)) + UInt(day)
