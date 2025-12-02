@@ -1,8 +1,9 @@
 import testing
 from small_time.time_zone import TIMEZONE_MAP, TimeZone, from_utc
+from testing import TestSuite
 
 
-def test_time_zone():
+fn test_time_zone() raises:
     testing.assert_equal(from_utc("UTC+0800").offset, 28800)
     testing.assert_equal(from_utc("UTC+08:00").offset, 28800)
     testing.assert_equal(from_utc("UTC08:00").offset, 28800)
@@ -12,7 +13,7 @@ def test_time_zone():
     testing.assert_equal(from_utc("08").offset, 28800)
 
 
-def test_time_zone_from_name():
+fn test_time_zone_from_name() raises:
     # Test with a known time zone
     tz = materialize[TIMEZONE_MAP]()["Asia/Shanghai"]
     testing.assert_equal(tz.name, "Asia/Shanghai")
@@ -20,3 +21,7 @@ def test_time_zone_from_name():
 
     # Test with an invalid time zone
     testing.assert_false(materialize[TIMEZONE_MAP]().get("Invalid/TimeZone"))
+
+
+fn main() raises:
+    TestSuite.discover_tests[__functions_in_module()]().run()

@@ -1,9 +1,10 @@
 import testing
+from testing import TestSuite
 
 from small_time import TimeDelta
 
 
-def test_timedelta():
+fn test_timedelta() raises:
     testing.assert_equal(TimeDelta(3, 2, 100).total_seconds(), 259202.0001)
     testing.assert_true(TimeDelta(2, 1, 50).__add__(TimeDelta(1, 1, 50)).__eq__(TimeDelta(3, 2, 100)))
     testing.assert_true(TimeDelta(3, 2, 100).__sub__(TimeDelta(2, 1, 50)).__eq__(TimeDelta(1, 1, 50)))
@@ -31,3 +32,7 @@ def test_timedelta():
         ),
         "919 days, 23:28:30",
     )
+
+
+fn main() raises:
+    TestSuite.discover_tests[__functions_in_module()]().run()

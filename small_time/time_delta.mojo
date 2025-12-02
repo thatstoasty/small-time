@@ -1,8 +1,8 @@
-alias SECONDS_OF_DAY = 24 * 3600
+comptime SECONDS_OF_DAY = 24 * 3600
 
 
 @register_passable("trivial")
-struct TimeDelta(Copyable, ImplicitlyCopyable, Movable, Stringable):
+struct TimeDelta(Boolable, Comparable, Copyable, EqualityComparable, ImplicitlyCopyable, Movable, Stringable, Writable):
     """Time delta."""
 
     var days: Int
@@ -66,25 +66,37 @@ struct TimeDelta(Copyable, ImplicitlyCopyable, Movable, Stringable):
         self.seconds = self.seconds % SECONDS_OF_DAY
         self.days += days_
 
+    fn write_to[W: Writer, //](self, mut writer: W):
+        """Writes the time delta to a writer.
+
+        Parameters:
+            W: The type of writer to write to.
+
+        Args:
+            writer: Writer to write to.
+        """
+        var mm = self.seconds // 60
+        var ss = String(self.seconds % 60)
+        var hh = String(mm // 60)
+        mm = mm % 60
+        if self.days:
+            if abs(self.days) != 1:
+                writer.write(String(self.days), " days, ")
+            else:
+                writer.write(String(self.days), " day, ")
+
+        writer.write(hh, ":", String(mm).rjust(2, "0"), ":", ss.rjust(2, "0"))
+
+        if self.microseconds:
+            writer.write(String(self.microseconds).rjust(6, "0"))
+
     fn __str__(self) -> String:
         """String representation of the duration.
 
         Returns:
             String representation of the duration.
         """
-        var mm = self.seconds // 60
-        var ss = String(self.seconds % 60)
-        var hh = String(mm // 60)
-        mm = mm % 60
-        var result = String(hh, ":", String(mm).rjust(2, "0"), ":", ss.rjust(2, "0"))
-        if self.days:
-            if abs(self.days) != 1:
-                result = String(self.days, " days, ", result)
-            else:
-                result = String(self.days, " day, ", result)
-        if self.microseconds:
-            result.write(String(self.microseconds).rjust(6, "0"))
-        return result^
+        return String.write(self)
 
     fn total_seconds(self) -> Float64:
         """Total seconds in the duration.
@@ -300,9 +312,9 @@ struct TimeDelta(Copyable, ImplicitlyCopyable, Movable, Stringable):
         return self.days != 0 or self.seconds != 0 or self.microseconds != 0
 
 
-alias MIN = TimeDelta(-99999999)
+comptime MIN = TimeDelta(-99999999)
 """Minimum time delta."""
-alias MAX = TimeDelta(days=99999999)
+comptime MAX = TimeDelta(days=99999999)
 """Maximum time delta."""
-alias RESOLUTION = TimeDelta(microseconds=1)
+comptime RESOLUTION = TimeDelta(microseconds=1)
 """Resolution of the time delta."""

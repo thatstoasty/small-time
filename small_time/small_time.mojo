@@ -1,21 +1,22 @@
 import small_time._libc as libc
 import small_time.time_zone
-from small_time._formatter import FORMATTER
+from small_time._formatter import format
 from small_time.calendar_math import _DAYS_BEFORE_MONTH, ymd_to_ordinal
 from small_time.time_delta import TimeDelta
+from small_time.util import lut
 
 
-alias DAYS_IN_400_YEARS = 146097
+comptime DAYS_IN_400_YEARS = 146097
 """Number of days in 400 years."""
-alias DAYS_IN_100_YEARS = 36524
+comptime DAYS_IN_100_YEARS = 36524
 """Number of days in 100 years."""
-alias DAYS_IN_4_YEARS = 1461
+comptime DAYS_IN_4_YEARS = 1461
 """Number of days in 4 years."""
-alias MAX_TIMESTAMP: Int = 32503737600
+comptime MAX_TIMESTAMP: Int = 32503737600
 """Maximum timestamp."""
-alias MAX_TIMESTAMP_MS = MAX_TIMESTAMP * 1000
+comptime MAX_TIMESTAMP_MS = MAX_TIMESTAMP * 1000
 """Maximum timestamp in milliseconds."""
-alias MAX_TIMESTAMP_US = MAX_TIMESTAMP * 1_000_000
+comptime MAX_TIMESTAMP_US = MAX_TIMESTAMP * 1_000_000
 """Maximum timestamp in microseconds."""
 
 
@@ -101,7 +102,7 @@ fn _validate_timestamp(
         raise Error("Received negative microseconds. Received: ", microseconds)
 
     return SmallTime(
-        year,
+        UInt(year),
         month,
         day,
         hours,
@@ -200,12 +201,11 @@ fn parse_time_with_format(date: StringSlice, format: StringSlice, tz: StringSlic
     from small_time.small_time import parse_time_with_format
     print(parse_time_with_format('20-01-2019 15:49:10', '%d-%m-%Y %H:%M:%S'))
     ```
-    .
     """
     return parse_time_with_format(date, format, time_zone.from_utc(tz))
 
 
-fn from_ordinal(ordinal: Int) -> SmallTime:
+fn from_ordinal(ordinal: UInt) -> SmallTime:
     """Construct a SmallTime from a proleptic Gregorian ordinal.
 
     Args:
@@ -263,28 +263,28 @@ fn from_ordinal(ordinal: Int) -> SmallTime:
 
     year += n100 * 100 + n4 * 4 + n1
     if n1 == 4 or n100 == 4:
-        return SmallTime(year - 1, 12, 31)
+        return SmallTime(UInt(year - 1), 12, 31)
 
     # Now the year is correct, and n is the offset from January 1.  We find
     # the month via an estimate that's either exact or one too large.
     var leap_year = n1 == 3 and (n4 != 24 or n100 == 3)
     var month = (n + 50) >> 5
-    var preceding: Int
+    var preceding: UInt
     if month > 2 and leap_year:
-        preceding = _DAYS_BEFORE_MONTH[month] + 1
+        preceding = UInt(lut[_DAYS_BEFORE_MONTH](month) + 1)
     else:
-        preceding = _DAYS_BEFORE_MONTH[month]
+        preceding = UInt(lut[_DAYS_BEFORE_MONTH](month))
     if preceding > n:  # estimate is too large
         month -= 1
         if month == 2 and leap_year:
-            preceding -= _DAYS_BEFORE_MONTH[month] + 1
+            preceding -= UInt(lut[_DAYS_BEFORE_MONTH](month) + 1)
         else:
-            preceding -= _DAYS_BEFORE_MONTH[month]
+            preceding -= UInt(lut[_DAYS_BEFORE_MONTH](month))
     n -= preceding
 
     # Now the year and month are correct, and n is the offset from the
     # start of that month:  we're done!
-    return SmallTime(year, month, n + 1)
+    return SmallTime(UInt(year), UInt8(month), UInt8(n + 1))
 
 
 @fieldwise_init
@@ -292,19 +292,19 @@ fn from_ordinal(ordinal: Int) -> SmallTime:
 struct Specification(Copyable, EqualityComparable, ImplicitlyCopyable, Movable):
     """Time specification for the `SmallTime.isoformat` method."""
 
-    var value: Int
+    var value: UInt8
     """Internal enum value."""
-    alias AUTO = Self(0)
+    comptime AUTO = Self(0)
     """Auto specification."""
-    alias HOURS = Self(1)
+    comptime HOURS = Self(1)
     """Hours specification."""
-    alias MINUTES = Self(2)
+    comptime MINUTES = Self(2)
     """Minutes specification."""
-    alias SECONDS = Self(3)
+    comptime SECONDS = Self(3)
     """Seconds specification."""
-    alias MILLISECONDS = Self(4)
+    comptime MILLISECONDS = Self(4)
     """Milliseconds specification."""
-    alias MICROSECONDS = Self(5)
+    comptime MICROSECONDS = Self(5)
     """Microseconds specification."""
 
     fn __eq__(self, other: Self) -> Bool:
@@ -333,32 +333,32 @@ struct Specification(Copyable, EqualityComparable, ImplicitlyCopyable, Movable):
 struct SmallTime(Copyable, ImplicitlyCopyable, Movable, Representable, Stringable, Writable):
     """Datetime representation."""
 
-    var year: Int
+    var year: UInt
     """Year."""
-    var month: Int
+    var month: UInt8
     """Month."""
-    var day: Int
+    var day: UInt8
     """Day."""
-    var hour: Int
+    var hour: UInt8
     """Hour."""
-    var minute: Int
+    var minute: UInt8
     """Minute."""
-    var second: Int
+    var second: UInt8
     """Second."""
-    var microsecond: Int
+    var microsecond: UInt32
     """Microsecond."""
     var time_zone: TimeZone
     """Time zone."""
 
     fn __init__(
         out self,
-        year: Int,
-        month: Int,
-        day: Int,
-        hour: Int = 0,
-        minute: Int = 0,
-        second: Int = 0,
-        microsecond: Int = 0,
+        year: UInt,
+        month: UInt8,
+        day: UInt8,
+        hour: UInt8 = 0,
+        minute: UInt8 = 0,
+        second: UInt8 = 0,
+        microsecond: UInt32 = 0,
         tz: TimeZone = TimeZone.UTC,
     ):
         """Initializes a new SmallTime instance.
@@ -401,7 +401,7 @@ struct SmallTime(Copyable, ImplicitlyCopyable, Movable, Representable, Stringabl
         print(m.format()) #'2013-05-09 03:56:47 -00:00'
         ```
         """
-        return FORMATTER.format[template](self)
+        return format[template](self)
 
     fn isoformat[specification: Specification = Specification.AUTO](self, separator: String = "T") -> String:
         """Return the time formatted according to ISO.
@@ -431,7 +431,7 @@ struct SmallTime(Copyable, ImplicitlyCopyable, Movable, Representable, Stringabl
         var date = String(
             String(self.year).rjust(4, "0"), "-", String(self.month).rjust(2, "0"), "-", String(self.day).rjust(2, "0")
         )
-        var time = String("")
+        var time = String()
 
         @parameter
         if specification == Specification.AUTO or specification == Specification.MICROSECONDS:
@@ -469,7 +469,7 @@ struct SmallTime(Copyable, ImplicitlyCopyable, Movable, Representable, Stringabl
 
         return separator.join(date, time) + self.time_zone.format()
 
-    fn to_ordinal(self) -> Int:
+    fn to_ordinal(self) -> UInt:
         """Return proleptic Gregorian ordinal for the year, month and day.
 
         Returns:
@@ -479,9 +479,9 @@ struct SmallTime(Copyable, ImplicitlyCopyable, Movable, Representable, Stringabl
             January 1 of year 1 is day 1.  Only the year, month and day values
             contribute to the result.
         """
-        return ymd_to_ordinal(self.year, self.month, self.day)
+        return ymd_to_ordinal(self.year, UInt(self.month), UInt(self.day))
 
-    fn iso_weekday(self) -> Int:
+    fn iso_weekday(self) -> UInt16:
         """Returns day of the week.
 
         Returns:
@@ -514,12 +514,11 @@ struct SmallTime(Copyable, ImplicitlyCopyable, Movable, Representable, Stringabl
         Returns:
             The time difference.
         """
-        var days1 = self.to_ordinal()
-        var days2 = other.to_ordinal()
-        var secs1 = self.second + self.minute * 60 + self.hour * 3600
-        var secs2 = other.second + other.minute * 60 + other.hour * 3600
-        var base = TimeDelta(days1 - days2, secs1 - secs2, self.microsecond - other.microsecond)
-        return base
+        var days1 = Int(self.to_ordinal())
+        var days2 = Int(other.to_ordinal())
+        var secs1 = Int(self.second + self.minute * 60 + self.hour * 3600)
+        var secs2 = Int(other.second + other.minute * 60 + other.hour * 3600)
+        return TimeDelta(days1 - days2, secs1 - secs2, Int(self.microsecond) - Int(other.microsecond))
 
     fn write_to[W: Writer, //](self, mut writer: W):
         """Writes a representation of the `SmallTime` instance to a writer.
