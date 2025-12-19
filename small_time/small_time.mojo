@@ -289,7 +289,7 @@ fn from_ordinal(ordinal: UInt) -> SmallTime:
 
 @fieldwise_init
 @register_passable("trivial")
-struct Specification(Copyable, EqualityComparable, ImplicitlyCopyable, Movable):
+struct Specification(Copyable, Equatable, ImplicitlyCopyable, Movable):
     """Time specification for the `SmallTime.isoformat` method."""
 
     var value: UInt8
@@ -467,7 +467,8 @@ struct SmallTime(Copyable, ImplicitlyCopyable, Movable, Representable, Stringabl
         elif specification == Specification.HOURS:
             time = String(self.hour).rjust(2, "0")
 
-        return separator.join(date, time) + self.time_zone.format()
+        var elements = [date, time]
+        return separator.join(elements) + self.time_zone.format()
 
     fn to_ordinal(self) -> UInt:
         """Return proleptic Gregorian ordinal for the year, month and day.

@@ -59,7 +59,7 @@ comptime DAY_ABBREVIATIONS: InlineArray[String, 8] = [
 
 
 @fieldwise_init
-struct Token(Copyable, EqualityComparable, ImplicitlyCopyable, Movable):
+struct Token(Copyable, Equatable, ImplicitlyCopyable, Movable):
     """Token for the formatter."""
 
     var char: Byte
@@ -264,7 +264,7 @@ fn replace_token(time: SmallTime, token: Byte, token_count: Int) -> String:
         if token_count == 1:
             return "Y"
         if token_count == 2:
-            return String(time.year).rjust(4, "0")[2:4]
+            return String(String(time.year).rjust(4, "0")[2:4])
         if token_count == 4:
             return String(time.year).rjust(4, "0")
     elif token == Token._M:
