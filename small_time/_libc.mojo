@@ -225,8 +225,8 @@ fn parse_time_with_format(mut time: String, mut format: String) raises -> _CTime
     """
     var tm = InlineArray[_CTime, 1](uninitialized=True)
     _ = _strptime(
-        time.unsafe_cstr_ptr(),
-        format.unsafe_cstr_ptr(),
+        time.as_c_string_slice().unsafe_ptr(),
+        format.as_c_string_slice().unsafe_ptr(),
         tm.unsafe_ptr(),
     )
     if not tm.unsafe_ptr():
