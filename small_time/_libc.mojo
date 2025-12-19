@@ -10,8 +10,8 @@ comptime suseconds_t = time_t
 comptime c_void = UInt8
 """C `void` type, used for generic pointers."""
 
-alias ImmutExternalUnsafePointer = UnsafePointer[origin = ImmutOrigin.external]
-alias MutExternalUnsafePointer = UnsafePointer[origin = MutOrigin.external]
+comptime ImmutExternalUnsafePointer = UnsafePointer[origin = ImmutOrigin.external]
+comptime MutExternalUnsafePointer = UnsafePointer[origin = MutOrigin.external]
 
 
 @fieldwise_init
