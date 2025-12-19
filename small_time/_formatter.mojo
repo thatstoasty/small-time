@@ -59,7 +59,7 @@ comptime DAY_ABBREVIATIONS: InlineArray[String, 8] = [
 
 
 @fieldwise_init
-struct Token(Copyable, ImplicitlyCopyable, Movable):
+struct Token(Copyable, Equatable, ImplicitlyCopyable, Movable):
     """Token for the formatter."""
 
     var char: Byte

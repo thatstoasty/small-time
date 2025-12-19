@@ -1,7 +1,7 @@
 [workspace]
 description = "Datetime library."
 authors = ["Mikhail Tavarez <miktavarez@gmail.com>"]
-channels = ["conda-forge", "https://conda.modular.com/max", "https://prefix.dev/pixi-build-backends"]
+channels = ["conda-forge", "https://conda.modular.com/max-nightly", "https://prefix.dev/pixi-build-backends"]
 platforms = ["osx-arm64", "linux-64", "linux-aarch64"]
 license = "MIT"
 license-file = "LICENSE"
@@ -28,13 +28,13 @@ build_and_publish = [{ task = "build" }, { task = "publish" }]
 
 [package]
 name = "small_time"
-version = "25.7.0"
+version = "26.1.0"
 
 [package.build]
 backend = { name = "pixi-build-mojo", version = "*" }
 
 [dependencies]
-mojo = ">=0.25.7.0,<0.26.1.0"
+mojo = "*"
 
 [package.host-dependencies]
 mojo-compiler = ">=0.25.7.0,<0.26.1.0"
