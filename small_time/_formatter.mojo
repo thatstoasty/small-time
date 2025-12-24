@@ -103,7 +103,6 @@ struct Token(Copyable, Equatable, ImplicitlyCopyable, Movable):
         return self.char == other
 
 
-@fieldwise_init
 @register_passable("trivial")
 struct BracketBounds(Copyable, ImplicitlyCopyable, Movable):
     """Bracket bounds."""
@@ -112,6 +111,10 @@ struct BracketBounds(Copyable, ImplicitlyCopyable, Movable):
     """Start index of the bracket."""
     var end: Int
     """End index of the bracket."""
+
+    fn __init__(out self, start: Int, end: Int):
+        self.start = start
+        self.end = end
 
 
 fn find_brackets[template: StringSlice]() -> List[BracketBounds]:

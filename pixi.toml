@@ -34,7 +34,7 @@ version = "26.1.0"
 backend = { name = "pixi-build-mojo", version = "*" }
 
 [dependencies]
-mojo = "*"
+mojo = ">=0.26.1.0.dev2025122405,<0.27"
 
 [package.host-dependencies]
 mojo-compiler = ">=0.25.7.0,<0.26.1.0"
@@ -46,7 +46,7 @@ mojo-compiler = ">=0.25.7.0,<0.26.1.0"
 mojo-compiler = ">=0.25.7.0,<0.26.1.0"
 
 [feature.util.dependencies]
-isort = ">=6.0.1,<7"
+isort = ">=7.0.0,<8"
 
 [environments]
 default = { solve-group = "default" }
