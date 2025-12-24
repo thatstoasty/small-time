@@ -287,13 +287,17 @@ fn from_ordinal(ordinal: UInt) -> SmallTime:
     return SmallTime(UInt(year), UInt8(month), UInt8(n + 1))
 
 
-@fieldwise_init
 @register_passable("trivial")
 struct Specification(Copyable, Equatable, ImplicitlyCopyable, Movable):
     """Time specification for the `SmallTime.isoformat` method."""
 
     var value: UInt8
     """Internal enum value."""
+
+    @implicit
+    fn __init__(out self, value: UInt8):
+        self.value = value
+
     comptime AUTO = Self(0)
     """Auto specification."""
     comptime HOURS = Self(1)
