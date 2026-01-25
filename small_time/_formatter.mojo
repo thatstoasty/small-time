@@ -124,10 +124,10 @@ fn find_brackets[template: StringSlice]() -> List[BracketBounds]:
 
     @parameter
     for i in range(len(template)):
-        if template[i] == "[" and not in_bracket:
+        if template[i:i+1] == "[" and not in_bracket:
             brackets.append(BracketBounds(i, -1))
             in_bracket = True
-        elif template[i] == "]" and in_bracket:
+        elif template[i:i+1] == "]" and in_bracket:
             brackets[-1].end = i
             in_bracket = False
 
@@ -225,14 +225,14 @@ fn replace[template: StringSlice](time: SmallTime) -> String:
 
     @parameter
     for i in range(len(template)):
-        var byte = ord(template[i])
+        var byte = ord(template[i:i+1])
         # If the current character is not a token, add it to the result.
         if byte > 127 or lut[SUB_CHARS](byte) == 0:
             if matched_byte > 0:
                 # If we have a matched token, replace it with the corresponding value.
                 result.write(replace_token(time, matched_byte, matched_count))
                 matched_byte = 0
-            result.write(template[i])
+            result.write(template[i:i+1])
             continue
 
         # If the current character is the same as the previous one, increment the count.
@@ -276,9 +276,9 @@ fn replace_token(time: SmallTime, token: Byte, token_count: Int) -> String:
         if token_count == 2:
             return String(time.month).rjust(2, "0")
         if token_count == 3:
-            return MONTH_ABBREVIATIONS[time.month]
+            return materialize[MONTH_ABBREVIATIONS]()[time.month]
         if token_count == 4:
-            return MONTH_NAMES[time.month]
+            return materialize[MONTH_NAMES]()[time.month]
     elif token == Token._D:
         if token_count == 1:
             return String(time.day)
@@ -324,9 +324,9 @@ fn replace_token(time: SmallTime, token: Byte, token_count: Int) -> String:
         if token_count == 1:
             return String(time.iso_weekday())
         if token_count == 3:
-            return DAY_ABBREVIATIONS[time.iso_weekday()]
+            return materialize[DAY_ABBREVIATIONS]()[time.iso_weekday()]
         if token_count == 4:
-            return DAY_NAMES[time.iso_weekday()]
+            return materialize[DAY_NAMES]()[time.iso_weekday()]
     elif token == Token._Z:
         if token_count == 3:
             return time.time_zone.name

@@ -38,11 +38,11 @@ fn from_utc(timestamp: StringSlice) raises -> TimeZone:
     if len(timestamp) > 3 and timestamp[0:3] == UTC:
         i = 3
 
-    var sign = -1 if timestamp[i] == DASH else 1
-    if timestamp[i] == "+" or timestamp[i] == DASH:
+    var sign = -1 if timestamp[i:i+1] == DASH else 1
+    if timestamp[i:i+1] == "+" or timestamp[i:i+1] == DASH:
         i += 1
 
-    if len(timestamp) < i + 2 or not _is_numeric(ord(timestamp[i])) or not _is_numeric(ord(timestamp[i + 1])):
+    if len(timestamp) < i + 2 or not _is_numeric(ord(timestamp[i:i+1])) or not _is_numeric(ord(timestamp[i + 1:i + 2])):
         raise Error("Received invalid UTC string format.")
     var hours = atol(timestamp[i : i + 2])
     i += 2
@@ -50,9 +50,9 @@ fn from_utc(timestamp: StringSlice) raises -> TimeZone:
     var minutes: Int
     if len(timestamp) <= i:
         minutes = 0
-    elif len(timestamp) == i + 3 and timestamp[i] == ":":
+    elif len(timestamp) == i + 3 and timestamp[i:i+1] == ":":
         minutes = atol(timestamp[i + 1 : i + 3])
-    elif len(timestamp) == i + 2 and _is_numeric(ord(timestamp[i])):
+    elif len(timestamp) == i + 2 and _is_numeric(ord(timestamp[i:i+1])):
         minutes = atol(timestamp[i : i + 2])
     else:
         raise Error("`timestamp` format is invalid")

@@ -484,7 +484,7 @@ struct SmallTime(Copyable, ImplicitlyCopyable, Movable, Representable, Stringabl
             January 1 of year 1 is day 1.  Only the year, month and day values
             contribute to the result.
         """
-        return ymd_to_ordinal(self.year, UInt(self.month), UInt(self.day))
+        return ymd_to_ordinal(self.year, UInt8(self.month), UInt8(self.day))
 
     fn iso_weekday(self) -> UInt16:
         """Returns day of the week.
@@ -492,7 +492,7 @@ struct SmallTime(Copyable, ImplicitlyCopyable, Movable, Representable, Stringabl
         Returns:
             Day of the week, where Monday == 1 ... Sunday == 7.
         """
-        return self.to_ordinal() % 7 or 7
+        return UInt16(self.to_ordinal() % 7 or 7)
 
     fn __str__(self) -> String:
         """Return the string representation of the `SmallTime` instance.
