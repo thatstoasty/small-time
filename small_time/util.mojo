@@ -1,7 +1,7 @@
 from builtin.globals import global_constant
 
 
-comptime StackArray[T: Copyable & Movable, size: Int] = InlineArray[T, size]
+comptime StackArray[T: Copyable, size: Int] = InlineArray[T, size]
 
 
 @always_inline

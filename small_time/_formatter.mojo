@@ -124,10 +124,10 @@ fn find_brackets[template: StringSlice]() -> List[BracketBounds]:
 
     @parameter
     for i in range(len(template)):
-        if template[i:i+1] == "[" and not in_bracket:
+        if template[i : i + 1] == "[" and not in_bracket:
             brackets.append(BracketBounds(i, -1))
             in_bracket = True
-        elif template[i:i+1] == "]" and in_bracket:
+        elif template[i : i + 1] == "]" and in_bracket:
             brackets[-1].end = i
             in_bracket = False
 
@@ -225,14 +225,14 @@ fn replace[template: StringSlice](time: SmallTime) -> String:
 
     @parameter
     for i in range(len(template)):
-        var byte = ord(template[i:i+1])
+        var byte = ord(template[i : i + 1])
         # If the current character is not a token, add it to the result.
         if byte > 127 or lut[SUB_CHARS](byte) == 0:
             if matched_byte > 0:
                 # If we have a matched token, replace it with the corresponding value.
                 result.write(replace_token(time, matched_byte, matched_count))
                 matched_byte = 0
-            result.write(template[i:i+1])
+            result.write(template[i : i + 1])
             continue
 
         # If the current character is the same as the previous one, increment the count.
