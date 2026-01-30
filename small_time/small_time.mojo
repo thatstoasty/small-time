@@ -287,13 +287,22 @@ fn from_ordinal(ordinal: UInt) -> SmallTime:
     return SmallTime(UInt(year), UInt8(month), UInt8(n + 1))
 
 
-@fieldwise_init
 @register_passable("trivial")
-struct Specification(Copyable, EqualityComparable, ImplicitlyCopyable, Movable):
+struct Specification(Equatable, ImplicitlyCopyable):
     """Time specification for the `SmallTime.isoformat` method."""
 
     var value: UInt8
     """Internal enum value."""
+
+    @implicit
+    fn __init__(out self, value: UInt8):
+        """Initializes a new Specification instance.
+
+        Args:
+            value: The internal enum value.
+        """
+        self.value = value
+
     comptime AUTO = Self(0)
     """Auto specification."""
     comptime HOURS = Self(1)
@@ -330,7 +339,7 @@ struct Specification(Copyable, EqualityComparable, ImplicitlyCopyable, Movable):
         return self.value != other.value
 
 
-struct SmallTime(Copyable, ImplicitlyCopyable, Movable, Representable, Stringable, Writable):
+struct SmallTime(Equatable, ImplicitlyCopyable, Representable, Stringable, Writable):
     """Datetime representation."""
 
     var year: UInt
@@ -467,7 +476,8 @@ struct SmallTime(Copyable, ImplicitlyCopyable, Movable, Representable, Stringabl
         elif specification == Specification.HOURS:
             time = String(self.hour).rjust(2, "0")
 
-        return separator.join(date, time) + self.time_zone.format()
+        var elements = [date, time]
+        return separator.join(elements) + self.time_zone.format()
 
     fn to_ordinal(self) -> UInt:
         """Return proleptic Gregorian ordinal for the year, month and day.
@@ -479,7 +489,7 @@ struct SmallTime(Copyable, ImplicitlyCopyable, Movable, Representable, Stringabl
             January 1 of year 1 is day 1.  Only the year, month and day values
             contribute to the result.
         """
-        return ymd_to_ordinal(self.year, UInt(self.month), UInt(self.day))
+        return ymd_to_ordinal(self.year, UInt8(self.month), UInt8(self.day))
 
     fn iso_weekday(self) -> UInt16:
         """Returns day of the week.
@@ -487,7 +497,7 @@ struct SmallTime(Copyable, ImplicitlyCopyable, Movable, Representable, Stringabl
         Returns:
             Day of the week, where Monday == 1 ... Sunday == 7.
         """
-        return self.to_ordinal() % 7 or 7
+        return UInt16(self.to_ordinal() % 7 or 7)
 
     fn __str__(self) -> String:
         """Return the string representation of the `SmallTime` instance.
@@ -553,8 +563,12 @@ struct SmallTime(Copyable, ImplicitlyCopyable, Movable, Representable, Stringabl
             self.second,
             ", microsecond=",
             self.microsecond,
+            ", tz=",
+            "TimeZone(",
+            "offset=",
+            self.time_zone.offset,
+            ", name=",
         )
-        writer.write(", tz=", "TimeZone(", "offset=", self.time_zone.offset, ", name=")
         write_optional(self.time_zone.name)
         writer.write(")")
         writer.write(")")

@@ -16,7 +16,7 @@ benchmarks = "mojo scripts/util.mojo benchmarks"
 examples = "mojo scripts/util.mojo examples"
 
 # Linting and Formatting
-lint_docs = "python3 scripts/check-docstrings.py"
+lint_docs = "mojo doc --Werror --diagnose-missing-doc-strings -o /dev/null ./small_time"
 mojo_format = "mojo format small_time --line-length 120"
 sort_imports = "isort **/*.mojo -m 3 --line-length 120 --lines-after-imports 2 --trailing-comma"
 format = [{ task = "mojo_format" }, { task = "sort_imports" }]
@@ -28,25 +28,25 @@ build_and_publish = [{ task = "build" }, { task = "publish" }]
 
 [package]
 name = "small_time"
-version = "25.7.0"
+version = "26.1.0"
 
 [package.build]
 backend = { name = "pixi-build-mojo", version = "*" }
 
 [dependencies]
-mojo = ">=0.25.7.0,<0.26.1.0"
+mojo = ">=0.26.1.0,<0.26.2.0"
 
 [package.host-dependencies]
-mojo-compiler = ">=0.25.7.0,<0.26.1.0"
+mojo-compiler = ">=0.26.1.0,<0.26.2.0"
 
 [package.build-dependencies]
-mojo-compiler = ">=0.25.7.0,<0.26.1.0"
+mojo-compiler = ">=0.26.1.0,<0.26.2.0"
 
 [package.run-dependencies]
-mojo-compiler = ">=0.25.7.0,<0.26.1.0"
+mojo-compiler = ">=0.26.1.0,<0.26.2.0"
 
 [feature.util.dependencies]
-isort = ">=6.0.1,<7"
+isort = ">=7.0.0,<8"
 
 [environments]
 default = { solve-group = "default" }

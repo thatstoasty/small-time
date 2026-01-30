@@ -17,7 +17,6 @@ comptime MONTH_NAMES: InlineArray[String, 13] = [
     "December",
 ]
 """The full month names."""
-
 comptime MONTH_ABBREVIATIONS: InlineArray[String, 13] = [
     "",
     "Jan",
@@ -59,7 +58,7 @@ comptime DAY_ABBREVIATIONS: InlineArray[String, 8] = [
 
 
 @fieldwise_init
-struct Token(Copyable, EqualityComparable, ImplicitlyCopyable, Movable):
+struct Token(Equatable, ImplicitlyCopyable):
     """Token for the formatter."""
 
     var char: Byte
@@ -80,32 +79,10 @@ struct Token(Copyable, EqualityComparable, ImplicitlyCopyable, Movable):
     comptime _A = Byte(ord("A"))
     comptime _a = Byte(ord("a"))
 
-    fn __eq__(self, other: Self) -> Bool:
-        """Checks if two tokens are equal.
-
-        Args:
-            other: The other token to compare with.
-
-        Returns:
-            True if the tokens are equal, False otherwise.
-        """
-        return self.char == other.char
-
-    fn __eq__(self, other: Byte) -> Bool:
-        """Checks if two tokens are equal.
-
-        Args:
-            other: The other token to compare with.
-
-        Returns:
-            True if the tokens are equal, False otherwise.
-        """
-        return self.char == other
-
 
 @fieldwise_init
 @register_passable("trivial")
-struct BracketBounds(Copyable, ImplicitlyCopyable, Movable):
+struct BracketBounds(ImplicitlyCopyable):
     """Bracket bounds."""
 
     var start: Int
@@ -115,16 +92,23 @@ struct BracketBounds(Copyable, ImplicitlyCopyable, Movable):
 
 
 fn find_brackets[template: StringSlice]() -> List[BracketBounds]:
-    """Finds the start index of the first bracket in the template."""
+    """Finds the start index of the first bracket in the template.
+
+    Parameters:
+        template: Format string template to search for brackets.
+
+    Returns:
+        List of BracketBounds representing the start and end indices of each bracket.
+    """
     var in_bracket = False
     var brackets = List[BracketBounds]()
 
     @parameter
     for i in range(len(template)):
-        if template[i] == "[" and not in_bracket:
+        if template[i : i + 1] == "[" and not in_bracket:
             brackets.append(BracketBounds(i, -1))
             in_bracket = True
-        elif template[i] == "]" and in_bracket:
+        elif template[i : i + 1] == "]" and in_bracket:
             brackets[-1].end = i
             in_bracket = False
 
@@ -132,6 +116,11 @@ fn find_brackets[template: StringSlice]() -> List[BracketBounds]:
 
 
 fn build_formatter_lookup(out chars: InlineArray[Int, 128]):
+    """Builds the formatter lookup table.
+
+    Returns:
+        Output lookup table.
+    """
     chars = InlineArray[Int, 128](fill=0)
     chars[Token._Y] = 4
     chars[Token._M] = 4
@@ -148,6 +137,7 @@ fn build_formatter_lookup(out chars: InlineArray[Int, 128]):
 
 
 comptime SUB_CHARS = build_formatter_lookup()
+"""A lookup table for formatter sub-characters."""
 
 
 # TODO (Mikhail): Add support for "Do" for day of the month with ordinal suffix (1st, 2nd, 3rd, etc.)
@@ -222,14 +212,14 @@ fn replace[template: StringSlice](time: SmallTime) -> String:
 
     @parameter
     for i in range(len(template)):
-        var byte = ord(template[i])
+        var byte = ord(template[i : i + 1])
         # If the current character is not a token, add it to the result.
         if byte > 127 or lut[SUB_CHARS](byte) == 0:
             if matched_byte > 0:
                 # If we have a matched token, replace it with the corresponding value.
                 result.write(replace_token(time, matched_byte, matched_count))
                 matched_byte = 0
-            result.write(template[i])
+            result.write(template[i : i + 1])
             continue
 
         # If the current character is the same as the previous one, increment the count.
@@ -264,7 +254,7 @@ fn replace_token(time: SmallTime, token: Byte, token_count: Int) -> String:
         if token_count == 1:
             return "Y"
         if token_count == 2:
-            return String(time.year).rjust(4, "0")[2:4]
+            return String(String(time.year).rjust(4, "0")[2:4])
         if token_count == 4:
             return String(time.year).rjust(4, "0")
     elif token == Token._M:
@@ -273,9 +263,9 @@ fn replace_token(time: SmallTime, token: Byte, token_count: Int) -> String:
         if token_count == 2:
             return String(time.month).rjust(2, "0")
         if token_count == 3:
-            return MONTH_ABBREVIATIONS[time.month]
+            return materialize[MONTH_ABBREVIATIONS]()[time.month]
         if token_count == 4:
-            return MONTH_NAMES[time.month]
+            return materialize[MONTH_NAMES]()[time.month]
     elif token == Token._D:
         if token_count == 1:
             return String(time.day)
@@ -321,9 +311,9 @@ fn replace_token(time: SmallTime, token: Byte, token_count: Int) -> String:
         if token_count == 1:
             return String(time.iso_weekday())
         if token_count == 3:
-            return DAY_ABBREVIATIONS[time.iso_weekday()]
+            return materialize[DAY_ABBREVIATIONS]()[time.iso_weekday()]
         if token_count == 4:
-            return DAY_NAMES[time.iso_weekday()]
+            return materialize[DAY_NAMES]()[time.iso_weekday()]
     elif token == Token._Z:
         if token_count == 3:
             return time.time_zone.name

@@ -11,11 +11,11 @@ from small_time.small_time import SmallTime, Specification, from_ordinal, from_t
 # TODO: Need a better way to test this, since it's not deterministic.
 fn assert_datetime_equal(dt: SmallTime, py_dt: PythonObject) raises:
     testing.assert_true(
-        dt.year == UInt(Int(py_dt.year))
-        and dt.month == Int(py_dt.month)
-        and dt.hour == Int(py_dt.hour)
-        and dt.minute == Int(py_dt.minute)
-        and dt.second == Int(py_dt.second),
+        dt.year == UInt(Int(String(py_dt.year)))
+        and dt.month == Int(String(py_dt.month))
+        and dt.hour == Int(String(py_dt.hour))
+        and dt.minute == Int(String(py_dt.minute))
+        and dt.second == Int(String(py_dt.second)),
         "dt: " + String(dt) + " is not equal to py_dt: " + String(py_dt),
     )
 

@@ -1,6 +1,8 @@
 # TODO (Mikhail): Time zones are very hacky right now. Eventually, I will try adopting Martin's datetime module in `forge-tools` instead.
 comptime UTC = "UTC"
+"""UTC string constant."""
 comptime DASH = "-"
+"""Dash character constant."""
 
 
 fn _is_numeric(c: Byte) -> Bool:
@@ -38,11 +40,15 @@ fn from_utc(timestamp: StringSlice) raises -> TimeZone:
     if len(timestamp) > 3 and timestamp[0:3] == UTC:
         i = 3
 
-    var sign = -1 if timestamp[i] == DASH else 1
-    if timestamp[i] == "+" or timestamp[i] == DASH:
+    var sign = -1 if timestamp[i : i + 1] == DASH else 1
+    if timestamp[i : i + 1] == "+" or timestamp[i : i + 1] == DASH:
         i += 1
 
-    if len(timestamp) < i + 2 or not _is_numeric(ord(timestamp[i])) or not _is_numeric(ord(timestamp[i + 1])):
+    if (
+        len(timestamp) < i + 2
+        or not _is_numeric(ord(timestamp[i : i + 1]))
+        or not _is_numeric(ord(timestamp[i + 1 : i + 2]))
+    ):
         raise Error("Received invalid UTC string format.")
     var hours = atol(timestamp[i : i + 2])
     i += 2
@@ -50,9 +56,9 @@ fn from_utc(timestamp: StringSlice) raises -> TimeZone:
     var minutes: Int
     if len(timestamp) <= i:
         minutes = 0
-    elif len(timestamp) == i + 3 and timestamp[i] == ":":
+    elif len(timestamp) == i + 3 and timestamp[i : i + 1] == ":":
         minutes = atol(timestamp[i + 1 : i + 3])
-    elif len(timestamp) == i + 2 and _is_numeric(ord(timestamp[i])):
+    elif len(timestamp) == i + 2 and _is_numeric(ord(timestamp[i : i + 1])):
         minutes = atol(timestamp[i : i + 2])
     else:
         raise Error("`timestamp` format is invalid")
@@ -70,553 +76,1101 @@ struct TimeZone(Copyable, ImplicitlyCopyable, Movable):
     var offset: Int
     """Offset in seconds."""
     comptime ASIA_JAKARTA = Self(name="Asia/Jakarta", offset=25200)
+    """Asia/Jakarta timezone."""
     comptime LIBYA = Self(name="Libya", offset=7200)
+    """Libya timezone."""
     comptime AMERICA_IQALUIT = Self(name="America/Iqaluit", offset=-18000)
+    """America/Iqaluit timezone."""
     comptime AMERICA_INDIANA_VEVAY = Self(name="America/Indiana/Vevay", offset=-18000)
+    """America/Indiana/Vevay timezone."""
     comptime ATLANTIC_SOUTH_GEORGIA = Self(name="Atlantic/South_Georgia", offset=-7200)
+    """Atlantic/South_Georgia timezone."""
     comptime AMERICA_CUIABA = Self(name="America/Cuiaba", offset=-14400)
+    """America/Cuiaba timezone."""
     comptime EUROPE_TALLINN = Self(name="Europe/Tallinn", offset=7200)
+    """Europe/Tallinn timezone."""
     comptime AMERICA_ENSENADA = Self(name="America/Ensenada", offset=-28800)
+    """America/Ensenada timezone."""
     comptime AFRICA_ABIDJAN = Self(name="Africa/Abidjan", offset=0)
+    """Africa/Abidjan timezone."""
     comptime PACIFIC_SAIPAN = Self(name="Pacific/Saipan", offset=36000)
+    """Pacific/Saipan timezone."""
     comptime MEXICO_GENERAL = Self(name="Mexico/General", offset=-21600)
+    """Mexico/General timezone."""
     comptime EUROPE_ROME = Self(name="Europe/Rome", offset=3600)
+    """Europe/Rome timezone."""
     comptime ASIA_SEOUL = Self(name="Asia/Seoul", offset=32400)
+    """Asia/Seoul timezone."""
     comptime US_MICHIGAN = Self(name="US/Michigan", offset=-18000)
+    """US/Michigan timezone."""
     comptime AMERICA_NEW_YORK = Self(name="America/New_York", offset=-18000)
+    """America/New_York timezone."""
     comptime EUROPE_ATHENS = Self(name="Europe/Athens", offset=7200)
+    """Europe/Athens timezone."""
     comptime EUROPE_LISBON = Self(name="Europe/Lisbon", offset=0)
+    """Europe/Lisbon timezone."""
     comptime AMERICA_ST_THOMAS = Self(name="America/St_Thomas", offset=-14400)
+    """America/St_Thomas timezone."""
     comptime EUROPE_MOSCOW = Self(name="Europe/Moscow", offset=10800)
+    """Europe/Moscow timezone."""
     comptime PACIFIC_EASTER = Self(name="Pacific/Easter", offset=-21600)
+    """Pacific/Easter timezone."""
     comptime AMERICA_PORTO_ACRE = Self(name="America/Porto_Acre", offset=-18000)
+    """America/Porto_Acre timezone."""
     comptime AMERICA_CRESTON = Self(name="America/Creston", offset=-25200)
+    """America/Creston timezone."""
     comptime PACIFIC_NORFOLK = Self(name="Pacific/Norfolk", offset=43200)
+    """Pacific/Norfolk timezone."""
     comptime AMERICA_ARGENTINA_CORDOBA = Self(name="America/Argentina/Cordoba", offset=-10800)
+    """America/Argentina/Cordoba timezone."""
     comptime AMERICA_ATKA = Self(name="America/Atka", offset=-36000)
+    """America/Atka timezone."""
     comptime PACIFIC_NIUE = Self(name="Pacific/Niue", offset=-39600)
+    """Pacific/Niue timezone."""
     comptime ASIA_ULAN_BATOR = Self(name="Asia/Ulan_Bator", offset=28800)
+    """Asia/Ulan_Bator timezone."""
     comptime EUROPE_SIMFEROPOL = Self(name="Europe/Simferopol", offset=10800)
+    """Europe/Simferopol timezone."""
     comptime ASIA_DILI = Self(name="Asia/Dili", offset=32400)
+    """Asia/Dili timezone."""
     comptime EUROPE_ZAGREB = Self(name="Europe/Zagreb", offset=3600)
+    """Europe/Zagreb timezone."""
     comptime ANTARCTICA_PALMER = Self(name="Antarctica/Palmer", offset=-10800)
+    """Antarctica/Palmer timezone."""
     comptime AMERICA_CAYENNE = Self(name="America/Cayenne", offset=-10800)
+    """America/Cayenne timezone."""
     comptime ASIA_TEL_AVIV = Self(name="Asia/Tel_Aviv", offset=7200)
+    """Asia/Tel_Aviv timezone."""
     comptime ASIA_URUMQI = Self(name="Asia/Urumqi", offset=21600)
+    """Asia/Urumqi timezone."""
     comptime ASIA_BEIRUT = Self(name="Asia/Beirut", offset=7200)
+    """Asia/Beirut timezone."""
     comptime ASIA_KUALA_LUMPUR = Self(name="Asia/Kuala_Lumpur", offset=28800)
+    """Asia/Kuala_Lumpur timezone."""
     comptime AMERICA_BELEM = Self(name="America/Belem", offset=-10800)
+    """America/Belem timezone."""
     comptime PACIFIC_HONOLULU = Self(name="Pacific/Honolulu", offset=-36000)
+    """Pacific/Honolulu timezone."""
     comptime AMERICA_SANTA_ISABEL = Self(name="America/Santa_Isabel", offset=-28800)
+    """America/Santa_Isabel timezone."""
     comptime PACIFIC_KWAJALEIN = Self(name="Pacific/Kwajalein", offset=43200)
+    """Pacific/Kwajalein timezone."""
     comptime AFRICA_LUANDA = Self(name="Africa/Luanda", offset=3600)
+    """Africa/Luanda timezone."""
     comptime AMERICA_CHICAGO = Self(name="America/Chicago", offset=-21600)
+    """America/Chicago timezone."""
     comptime ASIA_HARBIN = Self(name="Asia/Harbin", offset=28800)
+    """Asia/Harbin timezone."""
     comptime EUROPE_PARIS = Self(name="Europe/Paris", offset=3600)
+    """Europe/Paris timezone."""
     comptime PACIFIC_WALLIS = Self(name="Pacific/Wallis", offset=43200)
+    """Pacific/Wallis timezone."""
     comptime AMERICA_ARGENTINA_USHUAIA = Self(name="America/Argentina/Ushuaia", offset=-10800)
+    """America/Argentina/Ushuaia timezone."""
     comptime AUSTRALIA_ADelaide = Self(name="Australia/Adelaide", offset=37800)
+    """Australia/Adelaide timezone."""
     comptime ASIA_SINGAPORE = Self(name="Asia/Singapore", offset=28800)
+    """Asia/Singapore timezone."""
     comptime AMERICA_KRALENDIJK = Self(name="America/Kralendijk", offset=-14400)
+    """America/Kralendijk timezone."""
     comptime AMERICA_MONCTON = Self(name="America/Moncton", offset=-14400)
+    """America/Moncton timezone."""
     comptime AMERICA_ARUBA = Self(name="America/Aruba", offset=-14400)
+    """America/Aruba timezone."""
     comptime AMERICA_NORONHA = Self(name="America/Noronha", offset=-7200)
+    """America/Noronha timezone."""
     comptime ETC_UTC = Self(name="Etc/UTC", offset=0)
+    """Etc/UTC timezone."""
     comptime AFRICA_LUSAKA = Self(name="Africa/Lusaka", offset=7200)
+    """Africa/Lusaka timezone."""
     comptime ASIA_TOMSK = Self(name="Asia/Tomsk", offset=25200)
+    """Asia/Tomsk timezone."""
     comptime ASIA_PHNOM_PENH = Self(name="Asia/Phnom_Penh", offset=25200)
+    """Asia/Phnom_Penh timezone."""
     comptime ASIA_SAMARKAND = Self(name="Asia/Samarkand", offset=18000)
+    """Asia/Samarkand timezone."""
     comptime EUROPE_LUXEMBOURG = Self(name="Europe/Luxembourg", offset=3600)
+    """Europe/Luxembourg timezone."""
     comptime INDIAN_ANTANANARIVO = Self(name="Indian/Antananarivo", offset=10800)
+    """Indian/Antananarivo timezone."""
     comptime ETC_GMT_PLUS_1 = Self(name="Etc/GMT+1", offset=-3600)
+    """Etc/GMT+1 timezone."""
     comptime AMERICA_PORTO_VELHO = Self(name="America/Porto_Velho", offset=-14400)
+    """America/Porto_Velho timezone."""
     comptime GB = Self(name="GB", offset=0)
+    """GB timezone."""
     comptime AMERICA_BARbADOS = Self(name="America/Barbados", offset=-14400)
+    """America/Barbados timezone."""
     comptime ASIA_CHUNGKING = Self(name="Asia/Chungking", offset=28800)
+    """Asia/Chungking timezone."""
     comptime ASIA_SHANGHAI = Self(name="Asia/Shanghai", offset=28800)
+    """Asia/Shanghai timezone."""
     comptime ETC_GMT_13 = Self(name="Etc/GMT-13", offset=46800)
+    """Etc/GMT-13 timezone."""
     comptime AMERICA_INDIANA_INDIANAPOLIS = Self(name="America/Indiana/Indianapolis", offset=-18000)
+    """America/Indiana/Indianapolis timezone."""
     comptime AMERICA_INDIANA_VINCENNES = Self(name="America/Indiana/Vincennes", offset=-18000)
+    """America/Indiana/Vincennes timezone."""
     comptime AMERICA_INDIANA_TELL_CITY = Self(name="America/Indiana/Tell_City", offset=-21600)
+    """America/Indiana/Tell_City timezone."""
     comptime PACIFIC_KANTON = Self(name="Pacific/Kanton", offset=46800)
+    """Pacific/Kanton timezone."""
     comptime AMERICA_NASSAU = Self(name="America/Nassau", offset=-18000)
+    """America/Nassau timezone."""
     comptime AMERICA_RIO_BRANCO = Self(name="America/Rio_Branco", offset=-18000)
+    """America/Rio_Branco timezone."""
     comptime GMT_MINUS_0 = Self(name="GMT-0", offset=0)
+    """GMT-0 timezone."""
     comptime AUSTRALIA_TASMANIA = Self(name="Australia/Tasmania", offset=36000)
+    """Australia/Tasmania timezone."""
     comptime PACIFIC_KOSRAE = Self(name="Pacific/Kosrae", offset=39600)
+    """Pacific/Kosrae timezone."""
     comptime US_HAWAII = Self(name="US/Hawaii", offset=-36000)
+    """US/Hawaii timezone."""
     comptime ASIA_TBILISI = Self(name="Asia/Tbilisi", offset=14400)
+    """Asia/Tbilisi timezone."""
     comptime PACIFIC_BOUGAINVILLE = Self(name="Pacific/Bougainville", offset=39600)
+    """Pacific/Bougainville timezone."""
     comptime EUROPE_VADUZ = Self(name="Europe/Vaduz", offset=3600)
+    """Europe/Vaduz timezone."""
     comptime ETC_GMT_PLUS_11 = Self(name="Etc/GMT+11", offset=-39600)
+    """Etc/GMT+11 timezone."""
     comptime AFRICA_WINDHOEK = Self(name="Africa/Windhoek", offset=7200)
+    """Africa/Windhoek timezone."""
     comptime ATLANTIC_JAN_MAYEN = Self(name="Atlantic/Jan_Mayen", offset=3600)
+    """Atlantic/Jan_Mayen timezone."""
     comptime AFRICA_NDJAMENA = Self(name="Africa/Ndjamena", offset=3600)
+    """Africa/Ndjamena timezone."""
     comptime AMERICA_ADAK = Self(name="America/Adak", offset=-36000)
+    """America/Adak timezone."""
     comptime ISRAEL = Self(name="Israel", offset=7200)
+    """Israel timezone."""
     comptime US_INDiana_STARKE = Self(name="US/Indiana-Starke", offset=-21600)
+    """US/Indiana-Starke timezone."""
     comptime AMERICA_NORTH_DAKOTA_NEW_SALEM = Self(name="America/North_Dakota/New_Salem", offset=-21600)
+    """America/North_Dakota/New_Salem timezone."""
     comptime PACIFIC_PALAU = Self(name="Pacific/Palau", offset=32400)
+    """Pacific/Palau timezone."""
     comptime GMT_PLUS_0 = Self(name="GMT+0", offset=0)
+    """GMT+0 timezone."""
     comptime AMERICA_RAINY_RIVER = Self(name="America/Rainy_River", offset=-21600)
+    """America/Rainy_River timezone."""
     comptime AMERICA_WINNIPEG = Self(name="America/Winnipeg", offset=-21600)
+    """America/Winnipeg timezone."""
     comptime ETC_GREENWICH = Self(name="Etc/Greenwich", offset=0)
+    """Etc/Greenwich timezone."""
     comptime AMERICA_PANGNIRTUNG = Self(name="America/Pangnirtung", offset=-14400)
+    """America/Pangnirtung timezone."""
     comptime AFRICA_TRIPOLI = Self(name="Africa/Tripoli", offset=7200)
+    """Africa/Tripoli timezone."""
     comptime AMERICA_GUATEMALA = Self(name="America/Guatemala", offset=-21600)
+    """America/Guatemala timezone."""
     comptime ASIA_NICOSIA = Self(name="Asia/Nicosia", offset=7200)
+    """Asia/Nicosia timezone."""
     comptime AMERICA_BELIZE = Self(name="America/Belize", offset=-21600)
+    """America/Belize timezone."""
     comptime AMERICA_RESOLUTE = Self(name="America/Resolute", offset=-21600)
+    """America/Resolute timezone."""
     comptime ASIA_HEBRON = Self(name="Asia/Hebron", offset=7200)
+    """Asia/Hebron timezone."""
     comptime AMERICA_CARACAS = Self(name="America/Caracas", offset=-14400)
+    """America/Caracas timezone."""
     comptime ASIA_NOVOSIBIRSK = Self(name="Asia/Novosibirsk", offset=25200)
+    """Asia/Novosibirsk timezone."""
     comptime EUROPE_PODGORICA = Self(name="Europe/Podgorica", offset=3600)
+    """Europe/Podgorica timezone."""
     comptime PRC = Self(name="PRC", offset=28800)
+    """PRC timezone."""
     comptime EUROPE_KALININGRAD = Self(name="Europe/Kaliningrad", offset=7200)
+    """Europe/Kaliningrad timezone."""
     comptime EUROPE_ZURICH = Self(name="Europe/Zurich", offset=3600)
+    """Europe/Zurich timezone."""
     comptime AMERICA_ST_BARTHELEMY = Self(name="America/St_Barthelemy", offset=-14400)
+    """America/St_Barthelemy timezone."""
     comptime AMERICA_NUUK = Self(name="America/Nuuk", offset=-7200)
+    """America/Nuuk timezone."""
     comptime ETC_GMT_PLUS_12 = Self(name="Etc/GMT+12", offset=-43200)
+    """Etc/GMT+12 timezone."""
     comptime ASIA_HONG_KONG = Self(name="Asia/Hong_Kong", offset=28800)
+    """Asia/Hong_Kong timezone."""
     comptime ETC_GMT_MINUS_3 = Self(name="Etc/GMT-3", offset=10800)
+    """Etc/GMT-3 timezone."""
     comptime AMERICA_MIQUELON = Self(name="America/Miquelon", offset=-10800)
+    """America/Miquelon timezone."""
     comptime EUROPE_VOLGOGRAD = Self(name="Europe/Volgograd", offset=10800)
+    """Europe/Volgograd timezone."""
     comptime EUROPE_MADRID = Self(name="Europe/Madrid", offset=3600)
+    """Europe/Madrid timezone."""
     comptime AMERICA_MONTERREY = Self(name="America/Monterrey", offset=-21600)
+    """America/Monterrey timezone."""
     comptime AMERICA_ANCHORAGE = Self(name="America/Anchorage", offset=-32400)
+    """America/Anchorage timezone."""
     comptime AMERICA_ARGENTINA_SAN_LUIS = Self(name="America/Argentina/San_Luis", offset=-10800)
+    """America/Argentina/San_Luis timezone."""
     comptime AMERICA_EIRUNEPE = Self(name="America/Eirunepe", offset=-18000)
+    """America/Eirunepe timezone."""
     comptime AMERICA_ST_KITTS = Self(name="America/St_Kitts", offset=-14400)
+    """America/St_Kitts timezone."""
     comptime AMERICA_BAHIA_BANDERAS = Self(name="America/Bahia_Banderas", offset=-21600)
+    """America/Bahia_Banderas timezone."""
     comptime ETC_GMT_PLUS_2 = Self(name="Etc/GMT+2", offset=-7200)
+    """Etc/GMT+2 timezone."""
     comptime ZULU = Self(name="Zulu", offset=0)
+    """Zulu timezone."""
     comptime AFRICA_GABORONE = Self(name="Africa/Gaborone", offset=7200)
+    """Africa/Gaborone timezone."""
     comptime ANTARCTICA_MCMURDO = Self(name="Antarctica/McMurdo", offset=46800)
+    """Antarctica/McMurdo timezone."""
     comptime EUROPE_GUERNSEY = Self(name="Europe/Guernsey", offset=0)
+    """Europe/Guernsey timezone."""
     comptime EUROPE_ANDORRA = Self(name="Europe/Andorra", offset=3600)
+    """Europe/Andorra timezone."""
     comptime AMERICA_PARAMARIBO = Self(name="America/Paramaribo", offset=-10800)
+    """America/Paramaribo timezone."""
     comptime AMERICA_FORT_NELSON = Self(name="America/Fort_Nelson", offset=-25200)
+    """America/Fort_Nelson timezone."""
     comptime ANTARCTICA_TROLL = Self(name="Antarctica/Troll", offset=0)
+    """Antarctica/Troll timezone."""
     comptime EUROPE_UZHGOROD = Self(name="Europe/Uzhgorod", offset=7200)
+    """Europe/Uzhgorod timezone."""
     comptime ATLANTIC_CAPE_VERDE = Self(name="Atlantic/Cape_Verde", offset=-3600)
+    """Atlantic/Cape_Verde timezone."""
     comptime UCT = Self(name="UCT", offset=0)
+    """UCT timezone."""
     comptime ETC_GMT_MINUS_6 = Self(name="Etc/GMT-6", offset=21600)
+    """Etc/GMT-6 timezone."""
     comptime ASIA_SREDNEKOLYMSK = Self(name="Asia/Srednekolymsk", offset=39600)
+    """Asia/Srednekolymsk timezone."""
     comptime ASIA_UJUNG_PANDANG = Self(name="Asia/Ujung_Pandang", offset=28800)
+    """Asia/Ujung_Pandang timezone."""
     comptime AMERICA_THUNDER_BAY = Self(name="America/Thunder_Bay", offset=-18000)
+    """America/Thunder_Bay timezone."""
     comptime AFRICA_KHARTOUM = Self(name="Africa/Khartoum", offset=7200)
+    """Africa/Khartoum timezone."""
     comptime AFRICA_DOUALA = Self(name="Africa/Douala", offset=3600)
+    """Africa/Douala timezone."""
     comptime AMERICA_CAYMAN = Self(name="America/Cayman", offset=-18000)
+    """America/Cayman timezone."""
     comptime BRAZIL_ACRE = Self(name="Brazil/Acre", offset=-18000)
+    """Brazil/Acre timezone."""
     comptime AMERICA_INDIANA_KNOX = Self(name="America/Indiana/Knox", offset=-21600)
+    """America/Indiana/Knox timezone."""
     comptime AUSTRALIA_YANCOWINNA = Self(name="Australia/Yancowinna", offset=34200)
+    """Australia/Yancowinna timezone."""
     comptime AMERICA_CHIHUAHUA = Self(name="America/Chihuahua", offset=-25200)
+    """America/Chihuahua timezone."""
     comptime AMERICA_RECIFE = Self(name="America/Recife", offset=-10800)
+    """America/Recife timezone."""
     comptime AMERICA_INDIANA_MARENGO = Self(name="America/Indiana/Marengo", offset=-18000)
+    """America/Indiana/Marengo timezone."""
     comptime ASIA_YANGON = Self(name="Asia/Yangon", offset=23400)
+    """Asia/Yangon timezone."""
     comptime EUROPE_ASTRAKHAN = Self(name="Europe/Astrakhan", offset=14400)
+    """Europe/Astrakhan timezone."""
     comptime ASIA_RANGOON = Self(name="Asia/Rangoon", offset=23400)
+    """Asia/Rangoon timezone."""
     comptime AMERICA_VANCOUVER = Self(name="America/Vancouver", offset=-28800)
+    """America/Vancouver timezone."""
     comptime NZ_CHAT = Self(name="NZ-CHAT", offset=49500)
+    """NZ-CHAT timezone."""
     comptime AMERICA_MONTERRAT = Self(name="America/Montserrat", offset=-14400)
+    """America/Montserrat timezone."""
     comptime AMERICA_MERIDA = Self(name="America/Merida", offset=-21600)
+    """America/Merida timezone."""
     comptime AMERICA_PUERTO_RICO = Self(name="America/Puerto_Rico", offset=-14400)
+    """America/Puerto_Rico timezone."""
     comptime AMERICA_MACEIO = Self(name="America/Maceio", offset=-10800)
+    """America/Maceio timezone."""
     comptime AMERICA_PANAMA = Self(name="America/Panama", offset=-18000)
+    """America/Panama timezone."""
     comptime BRAZIL_EAST = Self(name="Brazil/East", offset=-10800)
+    """Brazil/East timezone."""
     comptime JAPAN = Self(name="Japan", offset=32400)
+    """Japan timezone."""
     comptime AUSTRALIA_VICTORIA = Self(name="Australia/Victoria", offset=36000)
+    """Australia/Victoria timezone."""
     comptime AMERICA_INDIANA_PETERSBURG = Self(name="America/Indiana/Petersburg", offset=-18000)
+    """America/Indiana/Petersburg timezone."""
     comptime ASIA_DUSHANBE = Self(name="Asia/Dushanbe", offset=18000)
+    """Asia/Dushanbe timezone."""
     comptime AFRICA_ASMERA = Self(name="Africa/Asmera", offset=10800)
+    """Africa/Asmera timezone."""
     comptime ETC_ZULU = Self(name="Etc/Zulu", offset=0)
+    """Etc/Zulu timezone."""
     comptime EUROPE_MONACO = Self(name="Europe/Monaco", offset=3600)
+    """Europe/Monaco timezone."""
     comptime ASIA_AMMAN = Self(name="Asia/Amman", offset=7200)
+    """Asia/Amman timezone."""
     comptime ASIA_KUWAIT = Self(name="Asia/Kuwait", offset=10800)
+    """Asia/Kuwait timezone."""
     comptime ASIA_SAKHALIN = Self(name="Asia/Sakhalin", offset=39600)
+    """Asia/Sakhalin timezone."""
     comptime EUROPE_GIBRALTAR = Self(name="Europe/Gibraltar", offset=3600)
+    """Europe/Gibraltar timezone."""
     comptime AMERICA_HAVANA = Self(name="America/Havana", offset=-18000)
+    """America/Havana timezone."""
     comptime ETC_GMT_PLUS_0 = Self(name="Etc/GMT+0", offset=0)
+    """Etc/GMT+0 timezone."""
     comptime ASIA_CHOIBALSAN = Self(name="Asia/Choibalsan", offset=32400)
+    """Asia/Choibalsan timezone."""
     comptime ASIA_VIENTIANE = Self(name="Asia/Vientiane", offset=25200)
+    """Asia/Vientiane timezone."""
     comptime AFRICA_MONROVIA = Self(name="Africa/Monrovia", offset=0)
+    """Africa/Monrovia timezone."""
     comptime AFRICA_LAGOS = Self(name="Africa/Lagos", offset=3600)
+    """Africa/Lagos timezone."""
     comptime AMERICA_ARGENTINA_BUENOS_AIRES = Self(name="America/Argentina/Buenos_Aires", offset=-10800)
+    """America/Argentina/Buenos_Aires timezone."""
     comptime AUSTRALIA_MELBOURNE = Self(name="Australia/Melbourne", offset=36000)
+    """Australia/Melbourne timezone."""
     comptime ETC_GMT_PLUS_6 = Self(name="Etc/GMT+6", offset=-21600)
+    """Etc/GMT+6 timezone."""
     comptime PST8PDT = Self(name="PST8PDT", offset=-28800)
+    """PST8PDT timezone."""
     comptime AMERICA_SCORESBYSUND = Self(name="America/Scoresbysund", offset=-3600)
+    """America/Scoresbysund timezone."""
     comptime AUSTRALIA_ACT = Self(name="Australia/ACT", offset=36000)
+    """Australia/ACT timezone."""
     comptime AFRICA_BLANTYRE = Self(name="Africa/Blantyre", offset=7200)
+    """Africa/Blantyre timezone."""
     comptime ASIA_SAIGON = Self(name="Asia/Saigon", offset=25200)
+    """Asia/Saigon timezone."""
     comptime ASIA_CHONGQING = Self(name="Asia/Chongqing", offset=28800)
+    """Asia/Chongqing timezone."""
     comptime GB_EIRE = Self(name="GB-Eire", offset=0)
+    """GB-Eire timezone."""
     comptime US_SAMOA = Self(name="US/Samoa", offset=-39600)
+    """US/Samoa timezone."""
     comptime ARCTIC_LONGYEARBYEN = Self(name="Arctic/Longyearbyen", offset=3600)
+    """Arctic/Longyearbyen timezone."""
     comptime AMERICA_CURACAO = Self(name="America/Curacao", offset=-14400)
+    """America/Curacao timezone."""
     comptime AMERICA_MEXICO_CITY = Self(name="America/Mexico_City", offset=-21600)
+    """America/Mexico_City timezone."""
     comptime ASIA_KABUL = Self(name="Asia/Kabul", offset=16200)
+    """Asia/Kabul timezone."""
     comptime AMERICA_INDIANAPOLIS = Self(name="America/Indianapolis", offset=-18000)
+    """America/Indianapolis timezone."""
     comptime ASIA_MACAO = Self(name="Asia/Macao", offset=28800)
+    """Asia/Macao timezone."""
     comptime CANADA_CENTRAL = Self(name="Canada/Central", offset=-21600)
+    """Canada/Central timezone."""
     comptime ASIA_FAMAGUSTA = Self(name="Asia/Famagusta", offset=10800)
+    """Asia/Famagusta timezone."""
     comptime AMERICA_ATIKOKAN = Self(name="America/Atikokan", offset=-18000)
+    """America/Atikokan timezone."""
     comptime ASIA_BRUNEI = Self(name="Asia/Brunei", offset=28800)
+    """Asia/Brunei timezone."""
     comptime ASIA_UST_NERA = Self(name="Asia/Ust-Nera", offset=39600)
+    """Asia/Ust-Nera timezone."""
     comptime BRAZIL_DE_NORONHA = Self(name="Brazil/DeNoronha", offset=-7200)
+    """Brazil/DeNoronha timezone."""
     comptime INDIAN_CHAGOS = Self(name="Indian/Chagos", offset=21600)
+    """Indian/Chagos timezone."""
     comptime ASIA_KATHMANDU = Self(name="Asia/Kathmandu", offset=20700)
+    """Asia/Kathmandu timezone."""
     comptime ASIA_TEHRAN = Self(name="Asia/Tehran", offset=12600)
+    """Asia/Tehran timezone."""
     comptime AFRICA_DAR_ES_SALAAM = Self(name="Africa/Dar_es_Salaam", offset=10800)
+    """Africa/Dar_es_Salaam timezone."""
     comptime AMERICA_MANAGUA = Self(name="America/Managua", offset=-21600)
+    """America/Managua timezone."""
     comptime AFRICA_CAIRO = Self(name="Africa/Cairo", offset=7200)
+    """Africa/Cairo timezone."""
     comptime PACIFIC_NAURU = Self(name="Pacific/Nauru", offset=43200)
+    """Pacific/Nauru timezone."""
     comptime EUROPE_SARATOV = Self(name="Europe/Saratov", offset=14400)
+    """Europe/Saratov timezone."""
     comptime INDIAN_MALDIVES = Self(name="Indian/Maldives", offset=18000)
+    """Indian/Maldives timezone."""
     comptime ASIA_MAKASSAR = Self(name="Asia/Makassar", offset=28800)
+    """Asia/Makassar timezone."""
     comptime AMERICA_SAO_PAULO = Self(name="America/Sao_Paulo", offset=-10800)
+    """America/Sao_Paulo timezone."""
     comptime AMERICA_ST_JOHNS = Self(name="America/St_Johns", offset=-12600)
+    """America/St_Johns timezone."""
     comptime ETC_GMT_PLUS_9 = Self(name="Etc/GMT+9", offset=-32400)
+    """Etc/GMT+9 timezone."""
     comptime ASIA_QYZYLORDA = Self(name="Asia/Qyzylorda", offset=18000)
+    """Asia/Qyzylorda timezone."""
     comptime AUSTRALIA_NORTH = Self(name="Australia/North", offset=34200)
+    """Australia/North timezone."""
     comptime AMERICA_MONTEVIDEO = Self(name="America/Montevideo", offset=-10800)
+    """America/Montevideo timezone."""
     comptime AUSTRALIA_WEST = Self(name="Australia/West", offset=28800)
+    """Australia/West timezone."""
     comptime EUROPE_OSLO = Self(name="Europe/Oslo", offset=3600)
+    """Europe/Oslo timezone."""
     comptime TURKEY = Self(name="Turkey", offset=10800)
+    """Turkey timezone."""
     comptime US_CENTRAL = Self(name="US/Central", offset=-21600)
+    """US/Central timezone."""
     comptime EUROPE_BERLIN = Self(name="Europe/Berlin", offset=3600)
+    """Europe/Berlin timezone."""
     comptime EUROPE_BRATISLAVA = Self(name="Europe/Bratislava", offset=3600)
+    """Europe/Bratislava timezone."""
     comptime AMERICA_EL_SALVADOR = Self(name="America/El_Salvador", offset=-21600)
+    """America/El_Salvador timezone."""
     comptime AFRICA_KAMPALA = Self(name="Africa/Kampala", offset=10800)
+    """Africa/Kampala timezone."""
     comptime AMERICA_DAWSON = Self(name="America/Dawson", offset=-25200)
+    """America/Dawson timezone."""
     comptime AMERICA_LA_PAZ = Self(name="America/La_Paz", offset=-14400)
+    """America/La_Paz timezone."""
     comptime US_ALEUTIAN = Self(name="US/Aleutian", offset=-36000)
+    """US/Aleutian timezone."""
     comptime ASIA_KOLKATA = Self(name="Asia/Kolkata", offset=19800)
+    """Asia/Kolkata timezone."""
     comptime ASIA_ORAL = Self(name="Asia/Oral", offset=18000)
+    """Asia/Oral timezone."""
     comptime ASIA_OMSK = Self(name="Asia/Omsk", offset=21600)
+    """Asia/Omsk timezone."""
     comptime AMERICA_SANTIAGO = Self(name="America/Santiago", offset=-10800)
+    """America/Santiago timezone."""
     comptime AMERICA_DETROIT = Self(name="America/Detroit", offset=-18000)
+    """America/Detroit timezone."""
     comptime AMERICA_ANGUILLA = Self(name="America/Anguilla", offset=-14400)
+    """America/Anguilla timezone."""
     comptime AMERICA_NOME = Self(name="America/Nome", offset=-32400)
+    """America/Nome timezone."""
     comptime SINGAPORE = Self(name="Singapore", offset=28800)
+    """Singapore timezone."""
     comptime AFRICA_CONAKRY = Self(name="Africa/Conakry", offset=0)
+    """Africa/Conakry timezone."""
     comptime AFRICA_MAPUTO = Self(name="Africa/Maputo", offset=7200)
+    """Africa/Maputo timezone."""
     comptime ANTARCTICA_DAVIS = Self(name="Antarctica/Davis", offset=25200)
+    """Antarctica/Davis timezone."""
     comptime ASIA_MANILA = Self(name="Asia/Manila", offset=28800)
+    """Asia/Manila timezone."""
     comptime PACIFIC_MAJURO = Self(name="Pacific/Majuro", offset=43200)
+    """Pacific/Majuro timezone."""
     comptime AFRICA_LUBUMBASHI = Self(name="Africa/Lubumbashi", offset=7200)
+    """Africa/Lubumbashi timezone."""
     comptime PORTUGAL = Self(name="Portugal", offset=0)
+    """Portugal timezone."""
     comptime PACIFIC_PORT_MORESBY = Self(name="Pacific/Port_Moresby", offset=36000)
+    """Pacific/Port_Moresby timezone."""
     comptime ETC_GMT_PLUS_3 = Self(name="Etc/GMT+3", offset=-10800)
+    """Etc/GMT+3 timezone."""
     comptime CHILE_CONTINENTAL = Self(name="Chile/Continental", offset=-10800)
+    """Chile/Continental timezone."""
     comptime GMT = Self(name="GMT", offset=0)
+    """GMT timezone."""
     comptime AMERICA_MARTINIQUE = Self(name="America/Martinique", offset=-14400)
+    """America/Martinique timezone."""
     comptime AFRICA_SAO_TOME = Self(name="Africa/Sao_Tome", offset=0)
+    """Africa/Sao_Tome timezone."""
     comptime AMERICA_SITKA = Self(name="America/Sitka", offset=-32400)
+    """America/Sitka timezone."""
     comptime ASIA_TAIPEI = Self(name="Asia/Taipei", offset=28800)
+    """Asia/Taipei timezone."""
     comptime INDIAN_MAYOTTE = Self(name="Indian/Mayotte", offset=10800)
+    """Indian/Mayotte timezone."""
     comptime AMERICA_ARGENTINA_RIO_GALLEGOS = Self(name="America/Argentina/Rio_Gallegos", offset=-10800)
+    """America/Argentina/Rio_Gallegos timezone."""
     comptime AMERICA_MENOMINEE = Self(name="America/Menominee", offset=-21600)
+    """America/Menominee timezone."""
     comptime CANADA_PACIFIC = Self(name="Canada/Pacific", offset=-28800)
+    """Canada/Pacific timezone."""
     comptime MET = Self(name="MET", offset=3600)
+    """MET timezone."""
     comptime ASIA_THIMBU = Self(name="Asia/Thimbu", offset=21600)
+    """Asia/Thimbu timezone."""
     comptime AMERICA_CAMPO_GRANDE = Self(name="America/Campo_Grande", offset=-14400)
+    """America/Campo_Grande timezone."""
     comptime ASIA_MAGADAN = Self(name="Asia/Magadan", offset=39600)
+    """Asia/Magadan timezone."""
     comptime AFRICA_CASABLANCA = Self(name="Africa/Casablanca", offset=0)
+    """Africa/Casablanca timezone."""
     comptime AMERICA_GUADELOUPE = Self(name="America/Guadeloupe", offset=-14400)
+    """America/Guadeloupe timezone."""
     comptime ATLANTIC_FAROE = Self(name="Atlantic/Faroe", offset=0)
+    """Atlantic/Faroe timezone."""
     comptime ASIA_ANADYR = Self(name="Asia/Anadyr", offset=43200)
+    """Asia/Anadyr timezone."""
     comptime AFRICA_PORTO_NOVO = Self(name="Africa/Porto-Novo", offset=3600)
+    """Africa/Porto-Novo timezone."""
     comptime AFRICA_BANJUL = Self(name="Africa/Banjul", offset=0)
+    """Africa/Banjul timezone."""
     comptime INDIAN_COMORO = Self(name="Indian/Comoro", offset=10800)
+    """Indian/Comoro timezone."""
     comptime AMERICA_YAKUTAT = Self(name="America/Yakutat", offset=-32400)
+    """America/Yakutat timezone."""
     comptime PACIFIC_GAMBIER = Self(name="Pacific/Gambier", offset=-32400)
+    """Pacific/Gambier timezone."""
     comptime ASIA_ASHGABAT = Self(name="Asia/Ashgabat", offset=18000)
+    """Asia/Ashgabat timezone."""
     comptime ANTARCTICA_DUMONT_DURVILLE = Self(name="Antarctica/DumontDUrville", offset=36000)
+    """Antarctica/DumontDUrville timezone."""
     comptime US_EAST_IND = Self(name="US/East-Indiana", offset=-18000)
+    """US/East-Indiana timezone."""
     comptime ASIA_IRKUTSK = Self(name="Asia/Irkutsk", offset=28800)
+    """Asia/Irkutsk timezone."""
     comptime AMERICA_MAZATLAN = Self(name="America/Mazatlan", offset=-25200)
+    """America/Mazatlan timezone."""
     comptime PACIFIC_APIA = Self(name="Pacific/Apia", offset=46800)
+    """Pacific/Apia timezone."""
     comptime AMERICA_BOA_VISTA = Self(name="America/Boa_Vista", offset=-14400)
+    """America/Boa_Vista timezone."""
     comptime ETC_GMT = Self(name="Etc/GMT", offset=0)
+    """Etc/GMT timezone."""
     comptime AMERICA_GUYANA = Self(name="America/Guyana", offset=-14400)
+    """America/Guyana timezone."""
     comptime AUSTRALIA_CURRIE = Self(name="Australia/Currie", offset=36000)
+    """Australia/Currie timezone."""
     comptime EUROPE_ULYANOVSK = Self(name="Europe/Ulyanovsk", offset=14400)
+    """Europe/Ulyanovsk timezone."""
     comptime PACIFIC_FAKAOFO = Self(name="Pacific/Fakaofo", offset=46800)
+    """Pacific/Fakaofo timezone."""
     comptime AMERICA_NORTH_DAKOTA_BEULAH = Self(name="America/North_Dakota/Beulah", offset=-21600)
+    """America/North_Dakota/Beulah timezone."""
     comptime EUROPE_PRAGUE = Self(name="Europe/Prague", offset=3600)
+    """Europe/Prague timezone."""
     comptime ASIA_QATAR = Self(name="Asia/Qatar", offset=10800)
+    """Asia/Qatar timezone."""
     comptime PACIFIC_FUNAFUTI = Self(name="Pacific/Funafuti", offset=43200)
+    """Pacific/Funafuti timezone."""
     comptime JAMAICA = Self(name="Jamaica", offset=-18000)
+    """Jamaica timezone."""
     comptime CANADA_EASTERN = Self(name="Canada/Eastern", offset=-18000)
+    """Canada/Eastern timezone."""
     comptime PACIFIC_GUAM = Self(name="Pacific/Guam", offset=36000)
+    """Pacific/Guam timezone."""
     comptime PACIFIC_FIJI = Self(name="Pacific/Fiji", offset=43200)
+    """Pacific/Fiji timezone."""
     comptime AFRICA_KIGALI = Self(name="Africa/Kigali", offset=7200)
+    """Africa/Kigali timezone."""
     comptime PACIFIC_TONGATAPU = Self(name="Pacific/Tongatapu", offset=46800)
+    """Pacific/Tongatapu timezone."""
     comptime AMERICA_LIMA = Self(name="America/Lima", offset=-18000)
+    """America/Lima timezone."""
     comptime ASIA_MUSCAT = Self(name="Asia/Muscat", offset=14400)
+    """Asia/Muscat timezone."""
     comptime ANTARCTICA_MACQUARIE = Self(name="Antarctica/Macquarie", offset=39600)
+    """Antarctica/Macquarie timezone."""
     comptime ETC_GMT_MINUS_2 = Self(name="Etc/GMT-2", offset=7200)
+    """Etc/GMT-2 timezone."""
     comptime PACIFIC_PITCAIRN = Self(name="Pacific/Pitcairn", offset=-32400)
+    """Pacific/Pitcairn timezone."""
     comptime CANADA_MOUNTAIN = Self(name="Canada/Mountain", offset=-25200)
+    """Canada/Mountain timezone."""
     comptime ASIA_YEKATERINBURG = Self(name="Asia/Yekaterinburg", offset=18000)
+    """Asia/Yekaterinburg timezone."""
     comptime PACIFIC_JOHNSTON = Self(name="Pacific/Johnston", offset=-36000)
+    """Pacific/Johnston timezone."""
     comptime EUROPE_VATICAN = Self(name="Europe/Vatican", offset=3600)
+    """Europe/Vatican timezone."""
     comptime ATLANTIC_BERMUDA = Self(name="Atlantic/Bermuda", offset=-14400)
+    """Atlantic/Bermuda timezone."""
     comptime ASIA_JERUSALEM = Self(name="Asia/Jerusalem", offset=7200)
+    """Asia/Jerusalem timezone."""
     comptime AMERICA_CIUDAD_JUAREZ = Self(name="America/Ciudad_Juarez", offset=-25200)
+    """America/Ciudad_Juarez timezone."""
     comptime PACIFIC_GALAPAGOS = Self(name="Pacific/Galapagos", offset=-21600)
+    """Pacific/Galapagos timezone."""
     comptime AMERICA_MONTREAL = Self(name="America/Montreal", offset=-18000)
+    """America/Montreal timezone."""
     comptime AFRICA_NOUAKCHOTT = Self(name="Africa/Nouakchott", offset=0)
+    """Africa/Nouakchott timezone."""
     comptime US_ARIZONA = Self(name="US/Arizona", offset=-25200)
+    """US/Arizona timezone."""
     comptime ASIA_KUCHING = Self(name="Asia/Kuching", offset=28800)
+    """Asia/Kuching timezone."""
     comptime ETC_GMT_PLUS_4 = Self(name="Etc/GMT+4", offset=-14400)
+    """Etc/GMT+4 timezone."""
     comptime AUSTRALIA_BRISBANE = Self(name="Australia/Brisbane", offset=36000)
+    """Australia/Brisbane timezone."""
     comptime CANADA_SASKATCHEWAN = Self(name="Canada/Saskatchewan", offset=-21600)
+    """Canada/Saskatchewan timezone."""
     comptime EUROPE_DUBLIN = Self(name="Europe/Dublin", offset=0)
+    """Europe/Dublin timezone."""
     comptime ASIA_QOSTANAY = Self(name="Asia/Qostanay", offset=21600)
+    """Asia/Qostanay timezone."""
     comptime AMERICA_EDMONTON = Self(name="America/Edmonton", offset=-25200)
+    """America/Edmonton timezone."""
     comptime ATLANTIC_REYKJAVIK = Self(name="Atlantic/Reykjavik", offset=0)
+    """Atlantic/Reykjavik timezone."""
     comptime AMERICA_FORTALEZA = Self(name="America/Fortaleza", offset=-10800)
+    """America/Fortaleza timezone."""
     comptime PACIFIC_KIRITIMATI = Self(name="Pacific/Kiritimati", offset=50400)
+    """Pacific/Kiritimati timezone."""
     comptime ETC_UNIVERSAL = Self(name="Etc/Universal", offset=0)
+    """Etc/Universal timezone."""
     comptime GMT0 = Self(name="GMT0", offset=0)
+    """GMT0 timezone."""
     comptime EUROPE_BELFAST = Self(name="Europe/Belfast", offset=0)
+    """Europe/Belfast timezone."""
     comptime PACIFIC_YAP = Self(name="Pacific/Yap", offset=36000)
+    """Pacific/Yap timezone."""
     comptime AMERICA_SANTO_DOMINGO = Self(name="America/Santo_Domingo", offset=-14400)
+    """America/Santo_Domingo timezone."""
     comptime ICELAND = Self(name="Iceland", offset=0)
+    """Iceland timezone."""
     comptime AMERICA_ARAGUAINA = Self(name="America/Araguaina", offset=-10800)
+    """America/Araguaina timezone."""
     comptime ASIA_KARACHI = Self(name="Asia/Karachi", offset=18000)
+    """Asia/Karachi timezone."""
     comptime ETC_GMT_PLUS_7 = Self(name="Etc/GMT+7", offset=-25200)
+    """Etc/GMT+7 timezone."""
     comptime AFRICA_BUJUMBURA = Self(name="Africa/Bujumbura", offset=7200)
+    """Africa/Bujumbura timezone."""
     comptime AMERICA_DAWSON_CREEK = Self(name="America/Dawson_Creek", offset=-25200)
+    """America/Dawson_Creek timezone."""
     comptime EUROPE_ZAPOROZHYE = Self(name="Europe/Zaporozhye", offset=7200)
+    """Europe/Zaporozhye timezone."""
     comptime ASIA_ULAANBAATAR = Self(name="Asia/Ulaanbaatar", offset=28800)
+    """Asia/Ulaanbaatar timezone."""
     comptime PACIFIC_SAMOA = Self(name="Pacific/Samoa", offset=-39600)
+    """Pacific/Samoa timezone."""
     comptime AUSTRALIA_DARWIN = Self(name="Australia/Darwin", offset=34200)
+    """Australia/Darwin timezone."""
     comptime ETC_GMT0 = Self(name="Etc/GMT0", offset=0)
+    """Etc/GMT0 timezone."""
     comptime PACIFIC_TAHITI = Self(name="Pacific/Tahiti", offset=-36000)
+    """Pacific/Tahiti timezone."""
     comptime ETC_GMT_MINUS_8 = Self(name="Etc/GMT-8", offset=28800)
+    """Etc/GMT-8 timezone."""
     comptime ATLANTIC_FAEROE = Self(name="Atlantic/Faeroe", offset=0)
+    """Atlantic/Faeroe timezone."""
     comptime AFRICA_LIBREVILLE = Self(name="Africa/Libreville", offset=3600)
+    """Africa/Libreville timezone."""
     comptime ASIA_BARNAUL = Self(name="Asia/Barnaul", offset=25200)
+    """Asia/Barnaul timezone."""
     comptime AMERICA_CORAL_HARBOUR = Self(name="America/Coral_Harbour", offset=-18000)
+    """America/Coral_Harbour timezone."""
     comptime ANTARCTICA_SYOWA = Self(name="Antarctica/Syowa", offset=10800)
+    """Antarctica/Syowa timezone."""
     comptime AMERICA_BUENOS_AIRES = Self(name="America/Buenos_Aires", offset=-10800)
+    """America/Buenos_Aires timezone."""
     comptime EUROPE_VIENNA = Self(name="Europe/Vienna", offset=3600)
+    """Europe/Vienna timezone."""
     comptime AMERICA_FORT_WAYNE = Self(name="America/Fort_Wayne", offset=-18000)
+    """America/Fort_Wayne timezone."""
     comptime NZ = Self(name="NZ", offset=43200)
+    """NZ timezone."""
     comptime ATLANTIC_AZORES = Self(name="Atlantic/Azores", offset=-3600)
+    """Atlantic/Azores timezone."""
     comptime AMERICA_COYHAIQUE = Self(name="America/Coyhaique", offset=-10800)
+    """America/Coyhaique timezone."""
     comptime ASIA_PYONGYANG = Self(name="Asia/Pyongyang", offset=32400)
+    """Asia/Pyongyang timezone."""
     comptime ETC_GMT_MINUS_10 = Self(name="Etc/GMT-10", offset=36000)
+    """Etc/GMT-10 timezone."""
     comptime MST = Self(name="MST", offset=-25200)
+    """MST timezone."""
     comptime AMERICA_ARGENTINA_JUJUY = Self(name="America/Argentina/Jujuy", offset=-10800)
+    """America/Argentina/Jujuy timezone."""
     comptime AMERICA_TIJUANA = Self(name="America/Tijuana", offset=-28800)
+    """America/Tijuana timezone."""
     comptime PACIFIC_GUADALCANAL = Self(name="Pacific/Guadalcanal", offset=39600)
+    """Pacific/Guadalcanal timezone."""
     comptime EUROPE_STOCKHOLM = Self(name="Europe/Stockholm", offset=3600)
+    """Europe/Stockholm timezone."""
     comptime US_ALASKA = Self(name="US/Alaska", offset=-32400)
+    """US/Alaska timezone."""
     comptime EUROPE_TIRASPOL = Self(name="Europe/Tiraspol", offset=7200)
+    """Europe/Tiraspol timezone."""
     comptime EUROPE_SAMARA = Self(name="Europe/Samara", offset=14400)
+    """Europe/Samara timezone."""
     comptime ETC_GMT_MINUS_12 = Self(name="Etc/GMT-12", offset=43200)
+    """Etc/GMT-12 timezone."""
     comptime KWAJALEIN = Self(name="Kwajalein", offset=43200)
+    """Kwajalein timezone."""
     comptime ASIA_MACAU = Self(name="Asia/Macau", offset=28800)
+    """Asia/Macau timezone."""
     comptime PACIFIC_TRUK = Self(name="Pacific/Truk", offset=36000)
+    """Pacific/Truk timezone."""
     comptime ASIA_BANGKOK = Self(name="Asia/Bangkok", offset=25200)
+    """Asia/Bangkok timezone."""
     comptime AMERICA_ANTIGUA = Self(name="America/Antigua", offset=-14400)
+    """America/Antigua timezone."""
     comptime AFRICA_EL_AAIUN = Self(name="Africa/El_Aaiun", offset=0)
+    """Africa/El_Aaiun timezone."""
     comptime EUROPE_MARIEHAMN = Self(name="Europe/Mariehamn", offset=7200)
+    """Europe/Mariehamn timezone."""
     comptime ASIA_JAYAPURA = Self(name="Asia/Jayapura", offset=32400)
+    """Asia/Jayapura timezone."""
     comptime EUROPE_SAN_MARINO = Self(name="Europe/San_Marino", offset=3600)
+    """Europe/San_Marino timezone."""
     comptime US_PACIFIC = Self(name="US/Pacific", offset=-28800)
+    """US/Pacific timezone."""
     comptime AFRICA_JOHANNESBURG = Self(name="Africa/Johannesburg", offset=7200)
+    """Africa/Johannesburg timezone."""
     comptime AUSTRALIA_EUCLA = Self(name="Australia/Eucla", offset=31500)
+    """Australia/Eucla timezone."""
     comptime AFRICA_NAIROBI = Self(name="Africa/Nairobi", offset=10800)
+    """Africa/Nairobi timezone."""
     comptime ETC_GMT_MINUS_7 = Self(name="Etc/GMT-7", offset=25200)
+    """Etc/GMT-7 timezone."""
     comptime AMERICA_INUVIK = Self(name="America/Inuvik", offset=-25200)
+    """America/Inuvik timezone."""
     comptime ASIA_TOKYO = Self(name="Asia/Tokyo", offset=32400)
+    """Asia/Tokyo timezone."""
     comptime ASIA_ATYRAU = Self(name="Asia/Atyrau", offset=18000)
+    """Asia/Atyrau timezone."""
     comptime ASIA_KASHGAR = Self(name="Asia/Kashgar", offset=21600)
+    """Asia/Kashgar timezone."""
     comptime W_SU = Self(name="W-SU", offset=10800)
+    """W-SU timezone."""
     comptime ASIA_TASHKENT = Self(name="Asia/Tashkent", offset=18000)
+    """Asia/Tashkent timezone."""
     comptime AFRICA_FREETOWN = Self(name="Africa/Freetown", offset=0)
+    """Africa/Freetown timezone."""
     comptime PACIFIC_PAGO_PAGO = Self(name="Pacific/Pago_Pago", offset=-39600)
+    """Pacific/Pago_Pago timezone."""
     comptime AMERICA_DENVER = Self(name="America/Denver", offset=-25200)
+    """America/Denver timezone."""
     comptime AUSTRALIA_LHI = Self(name="Australia/LHI", offset=37800)
+    """Australia/LHI timezone."""
     comptime PACIFIC_RAROTONGA = Self(name="Pacific/Rarotonga", offset=-36000)
+    """Pacific/Rarotonga timezone."""
     comptime MST7MDT = Self(name="MST7MDT", offset=-25200)
+    """MST7MDT timezone."""
     comptime PACIFIC_NOUMEA = Self(name="Pacific/Noumea", offset=39600)
+    """Pacific/Noumea timezone."""
     comptime ETC_UCT = Self(name="Etc/UCT", offset=0)
+    """Etc/UCT timezone."""
     comptime ETC_GMT_PLUS_10 = Self(name="Etc/GMT+10", offset=-36000)
+    """Etc/GMT+10 timezone."""
     comptime ROK = Self(name="ROK", offset=32400)
+    """ROK timezone."""
     comptime PACIFIC_AUCKLAND = Self(name="Pacific/Auckland", offset=43200)
+    """Pacific/Auckland timezone."""
     comptime ASIA_NOVOKUZNETSK = Self(name="Asia/Novokuznetsk", offset=25200)
+    """Asia/Novokuznetsk timezone."""
     comptime AMERICA_HERMOSILLO = Self(name="America/Hermosillo", offset=-25200)
+    """America/Hermosillo timezone."""
     comptime AMERICA_LOUISVILLE = Self(name="America/Louisville", offset=-18000)
+    """America/Louisville timezone."""
     comptime ASIA_HO_CHI_MINH = Self(name="Asia/Ho_Chi_Minh", offset=25200)
+    """Asia/Ho_Chi_Minh timezone."""
     comptime ASIA_YEREVAN = Self(name="Asia/Yerevan", offset=14400)
+    """Asia/Yerevan timezone."""
     comptime ASIA_YAKUTSK = Self(name="Asia/Yakutsk", offset=32400)
+    """Asia/Yakutsk timezone."""
     comptime UNIVERSAL = Self(name="Universal", offset=0)
+    """Universal timezone."""
     comptime AMERICA_TEGUCIGALPA = Self(name="America/Tegucigalpa", offset=-21600)
+    """America/Tegucigalpa timezone."""
     comptime MEXICO_BAJANORTE = Self(name="Mexico/BajaNorte", offset=-28800)
+    """Mexico/BajaNorte timezone."""
     comptime EUROPE_SARAJEVO = Self(name="Europe/Sarajevo", offset=3600)
+    """Europe/Sarajevo timezone."""
     comptime AMERICA_ARGENTINA_CATAMARCA = Self(name="America/Argentina/Catamarca", offset=-10800)
+    """America/Argentina/Catamarca timezone."""
     comptime CUBA = Self(name="Cuba", offset=-18000)
+    """Cuba timezone."""
     comptime ASIA_KHANDYGA = Self(name="Asia/Khandyga", offset=32400)
+    """Asia/Khandyga timezone."""
     comptime AMERICA_LOWER_PRINCES = Self(name="America/Lower_Princes", offset=-14400)
+    """America/Lower_Princes timezone."""
     comptime AMERICA_BLANC_SABLON = Self(name="America/Blanc-Sablon", offset=-14400)
+    """America/Blanc-Sablon timezone."""
     comptime AMERICA_BOGOTA = Self(name="America/Bogota", offset=-18000)
+    """America/Bogota timezone."""
     comptime AFRICA_LOME = Self(name="Africa/Lome", offset=0)
+    """Africa/Lome timezone."""
     comptime AMERICA_TORONTO = Self(name="America/Toronto", offset=-18000)
+    """America/Toronto timezone."""
     comptime EUROPE_WARSAW = Self(name="Europe/Warsaw", offset=3600)
+    """Europe/Warsaw timezone."""
     comptime AMERICA_YELLOWKNIFE = Self(name="America/Yellowknife", offset=-25200)
+    """America/Yellowknife timezone."""
     comptime AMERICA_SWIFT_CURRENT = Self(name="America/Swift_Current", offset=-21600)
+    """America/Swift_Current timezone."""
     comptime EST = Self(name="EST", offset=-18000)
+    """EST timezone."""
     comptime EUROPE_SOFIA = Self(name="Europe/Sofia", offset=7200)
+    """Europe/Sofia timezone."""
     comptime AFRICA_CEUTA = Self(name="Africa/Ceuta", offset=3600)
+    """Africa/Ceuta timezone."""
     comptime AMERICA_MARIGOT = Self(name="America/Marigot", offset=-14400)
+    """America/Marigot timezone."""
     comptime AMERICA_DANMARKSHAVN = Self(name="America/Danmarkshavn", offset=0)
+    """America/Danmarkshavn timezone."""
     comptime AFRICA_HARARE = Self(name="Africa/Harare", offset=7200)
+    """Africa/Harare timezone."""
     comptime UTC = Self(name="UTC", offset=0)
+    """UTC timezone."""
     comptime UTC_PLUS_1 = Self(name="UTC+1", offset=3600)
+    """UTC+1 timezone."""
     comptime UTC_PLUS_2 = Self(name="UTC+2", offset=7200)
+    """UTC+2 timezone."""
     comptime UTC_PLUS_3 = Self(name="UTC+3", offset=10800)
+    """UTC+3 timezone."""
     comptime UTC_PLUS_4 = Self(name="UTC+4", offset=14400)
+    """UTC+4 timezone."""
     comptime UTC_PLUS_5 = Self(name="UTC+5", offset=18000)
+    """UTC+5 timezone."""
     comptime UTC_PLUS_6 = Self(name="UTC+6", offset=21600)
+    """UTC+6 timezone."""
     comptime UTC_PLUS_7 = Self(name="UTC+7", offset=25200)
+    """UTC+7 timezone."""
     comptime UTC_PLUS_8 = Self(name="UTC+8", offset=28800)
+    """UTC+8 timezone."""
     comptime UTC_PLUS_9 = Self(name="UTC+9", offset=32400)
+    """UTC+9 timezone."""
     comptime UTC_PLUS_10 = Self(name="UTC+10", offset=36000)
+    """UTC+10 timezone."""
     comptime UTC_PLUS_11 = Self(name="UTC+11", offset=39600)
+    """UTC+11 timezone."""
     comptime UTC_PLUS_12 = Self(name="UTC+12", offset=43200)
+    """UTC+12 timezone."""
     comptime UTC_MINUS_1 = Self(name="UTC-1", offset=-3600)
+    """UTC-1 timezone."""
     comptime UTC_MINUS_2 = Self(name="UTC-2", offset=-7200)
+    """UTC-2 timezone."""
     comptime UTC_MINUS_3 = Self(name="UTC-3", offset=-10800)
+    """UTC-3 timezone."""
     comptime UTC_MINUS_4 = Self(name="UTC-4", offset=-14400)
+    """UTC-4 timezone."""
     comptime UTC_MINUS_5 = Self(name="UTC-5", offset=-18000)
+    """UTC-5 timezone."""
     comptime UTC_MINUS_6 = Self(name="UTC-6", offset=-21600)
+    """UTC-6 timezone."""
     comptime UTC_MINUS_7 = Self(name="UTC-7", offset=-25200)
+    """UTC-7 timezone."""
     comptime UTC_MINUS_8 = Self(name="UTC-8", offset=-28800)
+    """UTC-8 timezone."""
     comptime UTC_MINUS_9 = Self(name="UTC-9", offset=-32400)
+    """UTC-9 timezone."""
     comptime UTC_MINUS_10 = Self(name="UTC-10", offset=-36000)
+    """UTC-10 timezone."""
     comptime UTC_MINUS_11 = Self(name="UTC-11", offset=-39600)
+    """UTC-11 timezone."""
     comptime UTC_MINUS_12 = Self(name="UTC-12", offset=-43200)
+    """UTC-12 timezone."""
     comptime EST5EDT = Self(name="EST5EDT", offset=-18000)
+    """EST5EDT timezone."""
     comptime PACIFIC_MIDWAY = Self(name="Pacific/Midway", offset=-39600)
+    """Pacific/Midway timezone."""
     comptime ASIA_ISTANBUL = Self(name="Asia/Istanbul", offset=10800)
+    """Asia/Istanbul timezone."""
     comptime AMERICA_ARGENTINA_COMODRIVADAVIA = Self(name="America/Argentina/ComodRivadavia", offset=-10800)
+    """America/Argentina/ComodRivadavia timezone."""
     comptime ASIA_BAKU = Self(name="Asia/Baku", offset=14400)
+    """Asia/Baku timezone."""
     comptime AUSTRALIA_NSW = Self(name="Australia/NSW", offset=36000)
+    """Australia/NSW timezone."""
     comptime EUROPE_BUSINGEN = Self(name="Europe/Busingen", offset=3600)
+    """Europe/Busingen timezone."""
     comptime AMERICA_REGINA = Self(name="America/Regina", offset=-21600)
+    """America/Regina timezone."""
     comptime AFRICA_BANGUI = Self(name="Africa/Bangui", offset=3600)
+    """Africa/Bangui timezone."""
     comptime POLAND = Self(name="Poland", offset=3600)
+    """Poland timezone."""
     comptime INDIAN_CHRISTMAS = Self(name="Indian/Christmas", offset=25200)
+    """Indian/Christmas timezone."""
     comptime AUSTRALIA_QUEENSLAND = Self(name="Australia/Queensland", offset=36000)
+    """Australia/Queensland timezone."""
     comptime ASIA_BISHKEK = Self(name="Asia/Bishkek", offset=21600)
+    """Asia/Bishkek timezone."""
     comptime ASIA_DUBAI = Self(name="Asia/Dubai", offset=14400)
+    """Asia/Dubai timezone."""
     comptime AFRICA_MBABANE = Self(name="Africa/Mbabane", offset=7200)
+    """Africa/Mbabane timezone."""
     comptime AMERICA_GRAND_TURK = Self(name="America/Grand_Turk", offset=-18000)
+    """America/Grand_Turk timezone."""
     comptime AMERICA_GLACE_BAY = Self(name="America/Glace_Bay", offset=-14400)
+    """America/Glace_Bay timezone."""
     comptime PACIFIC_ENDERBURY = Self(name="Pacific/Enderbury", offset=46800)
+    """Pacific/Enderbury timezone."""
     comptime AFRICA_DAKAR = Self(name="Africa/Dakar", offset=0)
+    """Africa/Dakar timezone."""
     comptime AFRICA_ALGIERS = Self(name="Africa/Algiers", offset=3600)
+    """Africa/Algiers timezone."""
     comptime ASIA_DAMASCUS = Self(name="Asia/Damascus", offset=7200)
+    """Asia/Damascus timezone."""
     comptime AMERICA_RANKIN_INLET = Self(name="America/Rankin_Inlet", offset=-21600)
+    """America/Rankin_Inlet timezone."""
     comptime EUROPE_BRUSSELS = Self(name="Europe/Brussels", offset=3600)
+    """Europe/Brussels timezone."""
     comptime ASIA_HOVD = Self(name="Asia/Hovd", offset=25200)
+    """Asia/Hovd timezone."""
     comptime AUSTRALIA_HOBART = Self(name="Australia/Hobart", offset=39600)
+    """Australia/Hobart timezone."""
     comptime EUROPE_BUCHAREST = Self(name="Europe/Bucharest", offset=7200)
+    """Europe/Bucharest timezone."""
     comptime ASIA_GAZA = Self(name="Asia/Gaza", offset=7200)
+    """Asia/Gaza timezone."""
     comptime IRAN = Self(name="Iran", offset=12600)
+    """Iran timezone."""
     comptime AFRICA_DJIBOUTI = Self(name="Africa/Djibouti", offset=10800)
+    """Africa/Djibouti timezone."""
     comptime AMERICA_ROSARIO = Self(name="America/Rosario", offset=-10800)
+    """America/Rosario timezone."""
     comptime EUROPE_BELGRADE = Self(name="Europe/Belgrade", offset=3600)
+    """Europe/Belgrade timezone."""
     comptime ANTARCTICA_ROTHERA = Self(name="Antarctica/Rothera", offset=-10800)
+    """Antarctica/Rothera timezone."""
     comptime AFRICA_ADDIS_ABABA = Self(name="Africa/Addis_Ababa", offset=10800)
+    """Africa/Addis_Ababa timezone."""
     comptime ASIA_DACCA = Self(name="Asia/Dacca", offset=21600)
+    """Asia/Dacca timezone."""
     comptime ASIA_KRASNOYARSK = Self(name="Asia/Krasnoyarsk", offset=25200)
+    """Asia/Krasnoyarsk timezone."""
     comptime EUROPE_CHISINAU = Self(name="Europe/Chisinau", offset=7200)
+    """Europe/Chisinau timezone."""
     comptime INDIAN_COCOS = Self(name="Indian/Cocos", offset=23400)
+    """Indian/Cocos timezone."""
     comptime AMERICA_CAMBRIDGE_BAY = Self(name="America/Cambridge_Bay", offset=-25200)
+    """America/Cambridge_Bay timezone."""
     comptime ASIA_THIMPHU = Self(name="Asia/Thimphu", offset=21600)
+    """Asia/Thimphu timezone."""
     comptime EUROPE_RIGA = Self(name="Europe/Riga", offset=7200)
+    """Europe/Riga timezone."""
     comptime US_MOUNTAIN = Self(name="US/Mountain", offset=-25200)
+    """US/Mountain timezone."""
     comptime EGYPT = Self(name="Egypt", offset=7200)
+    """Egypt timezone."""
     comptime AMERICA_ARGENTINA_TUCUMAN = Self(name="America/Argentina/Tucuman", offset=-10800)
+    """America/Argentina/Tucuman timezone."""
     comptime ATLANTIC_ST_HELENA = Self(name="Atlantic/St_Helena", offset=0)
+    """Atlantic/St_Helena timezone."""
     comptime GREENWICH = Self(name="Greenwich", offset=0)
+    """Greenwich timezone."""
     comptime ASIA_ASHKHABAD = Self(name="Asia/Ashkhabad", offset=18000)
+    """Asia/Ashkhabad timezone."""
     comptime EUROPE_NICOSIA = Self(name="Europe/Nicosia", offset=7200)
+    """Europe/Nicosia timezone."""
     comptime ASIA_AQTAU = Self(name="Asia/Aqtau", offset=18000)
+    """Asia/Aqtau timezone."""
     comptime ANTARCTICA_MAWSON = Self(name="Antarctica/Mawson", offset=18000)
+    """Antarctica/Mawson timezone."""
     comptime AMERICA_NORTH_DAKOTA_CENTER = Self(name="America/North_Dakota/Center", offset=-21600)
+    """America/North_Dakota/Center timezone."""
     comptime EET = Self(name="EET", offset=7200)
+    """EET timezone."""
     comptime ROC = Self(name="ROC", offset=28800)
+    """ROC timezone."""
     comptime AMERICA_MENDOZA = Self(name="America/Mendoza", offset=-10800)
+    """America/Mendoza timezone."""
     comptime AMERICA_ST_VINCENT = Self(name="America/St_Vincent", offset=-14400)
+    """America/St_Vincent timezone."""
     comptime CST6CDT = Self(name="CST6CDT", offset=-21600)
+    """CST6CDT timezone."""
     comptime ASIA_BAHRAIN = Self(name="Asia/Bahrain", offset=10800)
+    """Asia/Bahrain timezone."""
     comptime ASIA_RIYADH = Self(name="Asia/Riyadh", offset=10800)
+    """Asia/Riyadh timezone."""
     comptime PACIFIC_EFATE = Self(name="Pacific/Efate", offset=39600)
+    """Pacific/Efate timezone."""
     comptime INDIAN_MAURITIUS = Self(name="Indian/Mauritius", offset=14400)
+    """Indian/Mauritius timezone."""
     comptime INDIAN_KERGUELEN = Self(name="Indian/Kerguelen", offset=18000)
+    """Indian/Kerguelen timezone."""
     comptime ASIA_COLOMBO = Self(name="Asia/Colombo", offset=19800)
+    """Asia/Colombo timezone."""
     comptime AFRICA_MASERU = Self(name="Africa/Maseru", offset=7200)
+    """Africa/Maseru timezone."""
     comptime AMERICA_ASUNCION = Self(name="America/Asuncion", offset=-14400)
+    """America/Asuncion timezone."""
     comptime EUROPE_COPENHAGEN = Self(name="Europe/Copenhagen", offset=3600)
+    """Europe/Copenhagen timezone."""
     comptime AMERICA_ARGENTINA_SALTA = Self(name="America/Argentina/Salta", offset=-10800)
+    """America/Argentina/Salta timezone."""
     comptime AFRICA_MALABO = Self(name="Africa/Malabo", offset=3600)
+    """Africa/Malabo timezone."""
     comptime AMERICA_MATAMOROS = Self(name="America/Matamoros", offset=-21600)
+    """America/Matamoros timezone."""
     comptime AMERICA_ARGENTINA_LA_RIOJA = Self(name="America/Argentina/La_Rioja", offset=-10800)
+    """America/Argentina/La_Rioja timezone."""
     comptime AFRICA_ACCRA = Self(name="Africa/Accra", offset=0)
+    """Africa/Accra timezone."""
     comptime EIRE = Self(name="Eire", offset=0)
+    """Eire timezone."""
     comptime AMERICA_KENTUCKY_LOUISVILLE = Self(name="America/Kentucky/Louisville", offset=-18000)
+    """America/Kentucky/Louisville timezone."""
     comptime AFRICA_BAMAKO = Self(name="Africa/Bamako", offset=0)
+    """Africa/Bamako timezone."""
     comptime ETC_GMT_5 = Self(name="Etc/GMT-5", offset=18000)
+    """Etc/GMT-5 timezone."""
     comptime PACIFIC_CHATHAM = Self(name="Pacific/Chatham", offset=45900)
+    """Pacific/Chatham timezone."""
     comptime WET = Self(name="WET", offset=0)
+    """WET timezone."""
     comptime ETC_GMT_PLUS_5 = Self(name="Etc/GMT+5", offset=-18000)
+    """Etc/GMT+5 timezone."""
     comptime AFRICA_MOGADISHU = Self(name="Africa/Mogadishu", offset=10800)
+    """Africa/Mogadishu timezone."""
     comptime AMERICA_THULE = Self(name="America/Thule", offset=-10800)
+    """America/Thule timezone."""
     comptime AMERICA_PHOENIX = Self(name="America/Phoenix", offset=-25200)
+    """America/Phoenix timezone."""
     comptime AUSTRALIA_LORD_HOWE = Self(name="Australia/Lord_Howe", offset=37800)
+    """Australia/Lord_Howe timezone."""
     comptime PACIFIC_CHUUK = Self(name="Pacific/Chuuk", offset=36000)
+    """Pacific/Chuuk timezone."""
     comptime PACIFIC_MARQUESAS = Self(name="Pacific/Marquesas", offset=-34200)
+    """Pacific/Marquesas timezone."""
     comptime PACIFIC_WAKE = Self(name="Pacific/Wake", offset=43200)
+    """Pacific/Wake timezone."""
     comptime AFRICA_BRAZZAVILLE = Self(name="Africa/Brazzaville", offset=3600)
+    """Africa/Brazzaville timezone."""
     comptime AUSTRALIA_BROKEN_HILL = Self(name="Australia/Broken_Hill", offset=34200)
+    """Australia/Broken_Hill timezone."""
     comptime AUSTRALIA_SOUTH = Self(name="Australia/South", offset=34200)
+    """Australia/South timezone."""
     comptime AMERICA_KENTUCKY_MONTICELLO = Self(name="America/Kentucky/Monticello", offset=-18000)
+    """America/Kentucky/Monticello timezone."""
     comptime EUROPE_KIEV = Self(name="Europe/Kiev", offset=7200)
+    """Europe/Kiev timezone."""
     comptime ETC_GMT_9 = Self(name="Etc/GMT-9", offset=32400)
+    """Etc/GMT-9 timezone."""
     comptime AUSTRALIA_LINDEMAN = Self(name="Australia/Lindeman", offset=36000)
+    """Australia/Lindeman timezone."""
     comptime AMERICA_METLAKATLA = Self(name="America/Metlakatla", offset=-28800)
+    """America/Metlakatla timezone."""
     comptime AMERICA_GOOSE_BAY = Self(name="America/Goose_Bay", offset=-14400)
+    """America/Goose_Bay timezone."""
     comptime AMERICA_ST_LUCIA = Self(name="America/St_Lucia", offset=-14400)
+    """America/St_Lucia timezone."""
     comptime EUROPE_LJUBLJANA = Self(name="Europe/Ljubljana", offset=3600)
+    """Europe/Ljubljana timezone."""
     comptime EUROPE_TIRANE = Self(name="Europe/Tirane", offset=3600)
+    """Europe/Tirane timezone."""
     comptime AMERICA_SANTAREM = Self(name="America/Santarem", offset=-10800)
+    """America/Santarem timezone."""
     comptime ATLANTIC_CANARY = Self(name="Atlantic/Canary", offset=0)
+    """Atlantic/Canary timezone."""
     comptime AMERICA_GRENADA = Self(name="America/Grenada", offset=-14400)
+    """America/Grenada timezone."""
     comptime AMERICA_SHIPROCK = Self(name="America/Shiprock", offset=-25200)
+    """America/Shiprock timezone."""
     comptime EUROPE_SKOPJE = Self(name="Europe/Skopje", offset=3600)
+    """Europe/Skopje timezone."""
     comptime ETC_GMT_PLUS_8 = Self(name="Etc/GMT+8", offset=-28800)
+    """Etc/GMT+8 timezone."""
     comptime ASIA_BAGHDAD = Self(name="Asia/Baghdad", offset=10800)
+    """Asia/Baghdad timezone."""
     comptime AUSTRALIA_SYDNEY = Self(name="Australia/Sydney", offset=36000)
+    """Australia/Sydney timezone."""
     comptime EUROPE_ISTANBUL = Self(name="Europe/Istanbul", offset=10800)
+    """Europe/Istanbul timezone."""
     comptime AMERICA_DOMINICA = Self(name="America/Dominica", offset=-14400)
+    """America/Dominica timezone."""
     comptime AMERICA_NIPIGON = Self(name="America/Nipigon", offset=-18000)
+    """America/Nipigon timezone."""
     comptime ASIA_CALCUTTA = Self(name="Asia/Calcutta", offset=19800)
+    """Asia/Calcutta timezone."""
     comptime ETC_GMT_0 = Self(name="Etc/GMT-0", offset=0)
+    """Etc/GMT-0 timezone."""
     comptime ANTARCTICA_CASEY = Self(name="Antarctica/Casey", offset=28800)
+    """Antarctica/Casey timezone."""
     comptime ASIA_VLADIVOSTOK = Self(name="Asia/Vladivostok", offset=36000)
+    """Asia/Vladivostok timezone."""
     comptime AMERICA_GODTHAB = Self(name="America/Godthab", offset=-10800)
+    """America/Godthab timezone."""
     comptime ASIA_AQTUBE = Self(name="Asia/Aqtube", offset=18000)
+    """Asia/Aqtube timezone."""
     comptime EUROPE_KIROV = Self(name="Europe/Kirov", offset=10800)
+    """Europe/Kirov timezone."""
     comptime ASIA_ADEN = Self(name="Asia/Aden", offset=10800)
+    """Asia/Aden timezone."""
     comptime EUROPE_ISLE_OF_MAN = Self(name="Europe/Isle_of_Man", offset=0)
+    """Europe/Isle_of_Man timezone."""
 
     fn __init__(out self, name: StringLiteral, offset: Int):
         """Initializes a new timezone.
@@ -1338,3 +1892,4 @@ comptime TIMEZONE_MAP: Dict[String, TimeZone] = {
     "Asia/Aden": TimeZone.ASIA_ADEN,
     "Europe/Isle_of_Man": TimeZone.EUROPE_ISLE_OF_MAN,
 }
+"""Timezone string to TimeZone mapping."""
