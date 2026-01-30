@@ -288,7 +288,7 @@ fn from_ordinal(ordinal: UInt) -> SmallTime:
 
 
 @register_passable("trivial")
-struct Specification(Copyable, Equatable, ImplicitlyCopyable, Movable):
+struct Specification(Equatable, ImplicitlyCopyable):
     """Time specification for the `SmallTime.isoformat` method."""
 
     var value: UInt8
@@ -296,6 +296,11 @@ struct Specification(Copyable, Equatable, ImplicitlyCopyable, Movable):
 
     @implicit
     fn __init__(out self, value: UInt8):
+        """Initializes a new Specification instance.
+
+        Args:
+            value: The internal enum value.
+        """
         self.value = value
 
     comptime AUTO = Self(0)
@@ -334,7 +339,7 @@ struct Specification(Copyable, Equatable, ImplicitlyCopyable, Movable):
         return self.value != other.value
 
 
-struct SmallTime(Copyable, ImplicitlyCopyable, Movable, Representable, Stringable, Writable):
+struct SmallTime(Equatable, ImplicitlyCopyable, Representable, Stringable, Writable):
     """Datetime representation."""
 
     var year: UInt
@@ -558,8 +563,12 @@ struct SmallTime(Copyable, ImplicitlyCopyable, Movable, Representable, Stringabl
             self.second,
             ", microsecond=",
             self.microsecond,
+            ", tz=",
+            "TimeZone(",
+            "offset=",
+            self.time_zone.offset,
+            ", name=",
         )
-        writer.write(", tz=", "TimeZone(", "offset=", self.time_zone.offset, ", name=")
         write_optional(self.time_zone.name)
         writer.write(")")
         writer.write(")")

@@ -16,7 +16,7 @@ comptime MutExternalUnsafePointer = UnsafePointer[origin=MutExternalOrigin]
 
 @fieldwise_init
 @register_passable("trivial")
-struct _CTimeValue(Copyable, ImplicitlyCopyable, Movable):
+struct _CTimeValue(ImplicitlyCopyable):
     """C `TimeValue` struct."""
 
     var seconds: time_t
@@ -27,7 +27,7 @@ struct _CTimeValue(Copyable, ImplicitlyCopyable, Movable):
 
 @fieldwise_init
 @register_passable("trivial")
-struct _CTimeZone(Copyable, ImplicitlyCopyable, Movable):
+struct _CTimeZone(ImplicitlyCopyable):
     """C `timezone` struct."""
 
     var minutes_west: c_int
@@ -37,7 +37,7 @@ struct _CTimeZone(Copyable, ImplicitlyCopyable, Movable):
 
 
 @fieldwise_init
-struct _CTime(Copyable, ImplicitlyCopyable, Movable, Writable):
+struct _CTime(ImplicitlyCopyable, Writable):
     """C `tm` struct."""
 
     var seconds: c_int
@@ -79,8 +79,15 @@ struct _CTime(Copyable, ImplicitlyCopyable, Movable, Writable):
         self.time_zone_offset = 0
         self.time_zone = ImmutExternalUnsafePointer[c_char]()
 
-    fn write_to[T: Writer, //](self, mut writer: T):
-        """Writes the time struct to a writer."""
+    fn write_to[W: Writer, //](self, mut writer: W):
+        """Writes the time struct to a writer.
+
+        Parameters:
+            W: The writer type.
+
+        Args:
+            writer: The writer to write to.
+        """
         writer.write("tm(seconds=", self.seconds)
         writer.write(", minutes=", self.minutes)
         writer.write(", hours=", self.hours)
@@ -277,67 +284,3 @@ fn get_gm_time(time: time_t) raises -> _CTime:
 
     # TODO (Mikhail): Maybe copy the result, not sure if take_pointee is safe here.
     return result.take_pointee()
-
-
-# --- ( error.h Constants )-----------------------------------------------------
-# TODO: These are probably platform specific, we should check the values on each linux and macos.
-comptime EPERM = 1
-comptime ENOENT = 2
-comptime ESRCH = 3
-comptime EINTR = 4
-comptime EIO = 5
-comptime ENXIO = 6
-comptime E2BIG = 7
-comptime ENOEXEC = 8
-comptime EBADF = 9
-comptime ECHILD = 10
-comptime EAGAIN = 11
-comptime ENOMEM = 12
-comptime EACCES = 13
-comptime EFAULT = 14
-comptime ENOTBLK = 15
-comptime EBUSY = 16
-comptime EEXIST = 17
-comptime EXDEV = 18
-comptime ENODEV = 19
-comptime ENOTDIR = 20
-comptime EISDIR = 21
-comptime EINVAL = 22
-comptime ENFILE = 23
-comptime EMFILE = 24
-comptime ENOTTY = 25
-comptime ETXTBSY = 26
-comptime EFBIG = 27
-comptime ENOSPC = 28
-comptime ESPIPE = 29
-comptime EROFS = 30
-comptime EMLINK = 31
-comptime EPIPE = 32
-comptime EDOM = 33
-comptime ERANGE = 34
-comptime EWOULDBLOCK = EAGAIN
-comptime EINPROGRESS = 36 if CompilationTarget.is_macos() else 115
-comptime EALREADY = 37 if CompilationTarget.is_macos() else 114
-comptime ENOTSOCK = 38 if CompilationTarget.is_macos() else 88
-comptime EDESTADDRREQ = 39 if CompilationTarget.is_macos() else 89
-comptime EMSGSIZE = 40 if CompilationTarget.is_macos() else 90
-comptime ENOPROTOOPT = 42 if CompilationTarget.is_macos() else 92
-comptime EAFNOSUPPORT = 47 if CompilationTarget.is_macos() else 97
-comptime EADDRINUSE = 48 if CompilationTarget.is_macos() else 98
-comptime EADDRNOTAVAIL = 49 if CompilationTarget.is_macos() else 99
-comptime ENETDOWN = 50 if CompilationTarget.is_macos() else 100
-comptime ENETUNREACH = 51 if CompilationTarget.is_macos() else 101
-comptime ECONNABORTED = 53 if CompilationTarget.is_macos() else 103
-comptime ECONNRESET = 54 if CompilationTarget.is_macos() else 104
-comptime ENOBUFS = 55 if CompilationTarget.is_macos() else 105
-comptime EISCONN = 56 if CompilationTarget.is_macos() else 106
-comptime ENOTCONN = 57 if CompilationTarget.is_macos() else 107
-comptime ETIMEDOUT = 60 if CompilationTarget.is_macos() else 110
-comptime ECONNREFUSED = 61 if CompilationTarget.is_macos() else 111
-comptime ELOOP = 62 if CompilationTarget.is_macos() else 40
-comptime ENAMETOOLONG = 63 if CompilationTarget.is_macos() else 36
-comptime EHOSTUNREACH = 65 if CompilationTarget.is_macos() else 113
-comptime EDQUOT = 69 if CompilationTarget.is_macos() else 122
-comptime ENOMSG = 91 if CompilationTarget.is_macos() else 42
-comptime EPROTO = 100 if CompilationTarget.is_macos() else 71
-comptime EOPNOTSUPP = 102 if CompilationTarget.is_macos() else 95

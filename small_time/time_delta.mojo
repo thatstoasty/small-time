@@ -1,8 +1,9 @@
 comptime SECONDS_OF_DAY = 24 * 3600
+"""Number of seconds in a day."""
 
 
 @register_passable("trivial")
-struct TimeDelta(Boolable, Comparable, Copyable, Equatable, ImplicitlyCopyable, Movable, Stringable, Writable):
+struct TimeDelta(Boolable, Comparable, Equatable, ImplicitlyCopyable, Stringable, Writable):
     """Time delta."""
 
     var days: Int

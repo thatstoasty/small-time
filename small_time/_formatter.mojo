@@ -17,7 +17,6 @@ comptime MONTH_NAMES: InlineArray[String, 13] = [
     "December",
 ]
 """The full month names."""
-
 comptime MONTH_ABBREVIATIONS: InlineArray[String, 13] = [
     "",
     "Jan",
@@ -59,7 +58,7 @@ comptime DAY_ABBREVIATIONS: InlineArray[String, 8] = [
 
 
 @fieldwise_init
-struct Token(Copyable, Equatable, ImplicitlyCopyable, Movable):
+struct Token(Equatable, ImplicitlyCopyable):
     """Token for the formatter."""
 
     var char: Byte
@@ -80,31 +79,10 @@ struct Token(Copyable, Equatable, ImplicitlyCopyable, Movable):
     comptime _A = Byte(ord("A"))
     comptime _a = Byte(ord("a"))
 
-    fn __eq__(self, other: Self) -> Bool:
-        """Checks if two tokens are equal.
 
-        Args:
-            other: The other token to compare with.
-
-        Returns:
-            True if the tokens are equal, False otherwise.
-        """
-        return self.char == other.char
-
-    fn __eq__(self, other: Byte) -> Bool:
-        """Checks if two tokens are equal.
-
-        Args:
-            other: The other token to compare with.
-
-        Returns:
-            True if the tokens are equal, False otherwise.
-        """
-        return self.char == other
-
-
+@fieldwise_init
 @register_passable("trivial")
-struct BracketBounds(Copyable, ImplicitlyCopyable, Movable):
+struct BracketBounds(ImplicitlyCopyable):
     """Bracket bounds."""
 
     var start: Int
@@ -112,13 +90,16 @@ struct BracketBounds(Copyable, ImplicitlyCopyable, Movable):
     var end: Int
     """End index of the bracket."""
 
-    fn __init__(out self, start: Int, end: Int):
-        self.start = start
-        self.end = end
-
 
 fn find_brackets[template: StringSlice]() -> List[BracketBounds]:
-    """Finds the start index of the first bracket in the template."""
+    """Finds the start index of the first bracket in the template.
+
+    Parameters:
+        template: Format string template to search for brackets.
+
+    Returns:
+        List of BracketBounds representing the start and end indices of each bracket.
+    """
     var in_bracket = False
     var brackets = List[BracketBounds]()
 
@@ -135,6 +116,11 @@ fn find_brackets[template: StringSlice]() -> List[BracketBounds]:
 
 
 fn build_formatter_lookup(out chars: InlineArray[Int, 128]):
+    """Builds the formatter lookup table.
+
+    Returns:
+        Output lookup table.
+    """
     chars = InlineArray[Int, 128](fill=0)
     chars[Token._Y] = 4
     chars[Token._M] = 4
@@ -151,6 +137,7 @@ fn build_formatter_lookup(out chars: InlineArray[Int, 128]):
 
 
 comptime SUB_CHARS = build_formatter_lookup()
+"""A lookup table for formatter sub-characters."""
 
 
 # TODO (Mikhail): Add support for "Do" for day of the month with ordinal suffix (1st, 2nd, 3rd, etc.)
