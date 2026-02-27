@@ -3,7 +3,7 @@ import small_time.time_zone
 from small_time._formatter import format
 from small_time.calendar_math import _DAYS_BEFORE_MONTH, ymd_to_ordinal
 from small_time.time_delta import TimeDelta
-from small_time.util import lut, rjust
+from small_time.util import lut
 
 
 comptime DAYS_IN_400_YEARS = 146097
@@ -12,7 +12,7 @@ comptime DAYS_IN_100_YEARS = 36524
 """Number of days in 100 years."""
 comptime DAYS_IN_4_YEARS = 1461
 """Number of days in 4 years."""
-comptime MAX_TIMESTAMP: Int = 32503737600
+comptime MAX_TIMESTAMP: Float64 = 32503737600
 """Maximum timestamp."""
 comptime MAX_TIMESTAMP_MS = MAX_TIMESTAMP * 1000
 """Maximum timestamp in milliseconds."""
@@ -103,12 +103,12 @@ fn _validate_timestamp(
 
     return SmallTime(
         UInt(year),
-        month,
-        day,
-        hours,
-        minutes,
-        seconds,
-        microseconds,
+        UInt8(month),
+        UInt8(day),
+        UInt8(hours),
+        UInt8(minutes),
+        UInt8(seconds),
+        UInt32(microseconds),
         time_zone,
     )
 
@@ -147,7 +147,7 @@ fn from_timestamp(timestamp: Float64, *, utc: Bool = False) raises -> SmallTime:
     Raises:
         Error: If the timestamp is invalid.
     """
-    return from_timestamp(libc._CTimeValue(Int(normalize_timestamp(timestamp)), 0), utc=utc)
+    return from_timestamp(libc._CTimeValue(Int64(Int(normalize_timestamp(timestamp))), 0), utc=utc)
 
 
 fn parse_time_with_format(date: StringSlice, format: StringSlice, tzinfo: TimeZone = TimeZone.UTC) raises -> SmallTime:
@@ -287,8 +287,7 @@ fn from_ordinal(ordinal: UInt) -> SmallTime:
     return SmallTime(UInt(year), UInt8(month), UInt8(n + 1))
 
 
-@register_passable("trivial")
-struct Specification(Equatable, ImplicitlyCopyable):
+struct Specification(Equatable, ImplicitlyCopyable, TrivialRegisterPassable):
     """Time specification for the `SmallTime.isoformat` method."""
 
     var value: UInt8
@@ -438,43 +437,47 @@ struct SmallTime(Equatable, ImplicitlyCopyable, Representable, Stringable, Writa
             'minutes', 'seconds', 'milliseconds' and 'microseconds'.
         """
         var date = String(
-            rjust(String(self.year), 4, "0"), "-", rjust(String(self.month), 2, "0"), "-", rjust(String(self.day), 2, "0")
+            String(self.year).ascii_rjust(4, "0"),
+            "-",
+            String(self.month).ascii_rjust(2, "0"),
+            "-",
+            String(self.day).ascii_rjust(2, "0"),
         )
         var time = String()
 
         @parameter
         if specification == Specification.AUTO or specification == Specification.MICROSECONDS:
             time = String(
-                rjust(String(self.hour), 2, "0"),
+                String(self.hour).ascii_rjust(2, "0"),
                 ":",
-                rjust(String(self.minute), 2, "0"),
+                String(self.minute).ascii_rjust(2, "0"),
                 ":",
-                rjust(String(self.second), 2, "0"),
+                String(self.second).ascii_rjust(2, "0"),
                 ".",
-                rjust(String(self.microsecond), 6, "0"),
+                String(self.microsecond).ascii_rjust(6, "0"),
             )
         elif specification == Specification.MILLISECONDS:
             time = String(
-                rjust(String(self.hour), 2, "0"),
+                String(self.hour).ascii_rjust(2, "0"),
                 ":",
-                rjust(String(self.minute), 2, "0"),
+                String(self.minute).ascii_rjust(2, "0"),
                 ":",
-                rjust(String(self.second), 2, "0"),
+                String(self.second).ascii_rjust(2, "0"),
                 ".",
-                rjust(String(self.microsecond // 1000), 3, "0"),
+                String(self.microsecond // 1000).ascii_rjust(3, "0"),
             )
         elif specification == Specification.SECONDS:
             time = String(
-                rjust(String(self.hour), 2, "0"),
+                String(self.hour).ascii_rjust(2, "0"),
                 ":",
-                rjust(String(self.minute), 2, "0"),
+                String(self.minute).ascii_rjust(2, "0"),
                 ":",
-                rjust(String(self.second), 2, "0"),
+                String(self.second).ascii_rjust(2, "0"),
             )
         elif specification == Specification.MINUTES:
-            time = String(rjust(String(self.hour), 2, "0"), ":", rjust(String(self.minute), 2, "0"))
+            time = String(String(self.hour).ascii_rjust(2, "0"), ":", String(self.minute).ascii_rjust(2, "0"))
         elif specification == Specification.HOURS:
-            time = rjust(String(self.hour), 2, "0")
+            time = String(self.hour).ascii_rjust(2, "0")
 
         var elements = [date, time]
         return separator.join(elements) + self.time_zone.format()
