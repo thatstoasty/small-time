@@ -1,5 +1,3 @@
-from small_time.util import rjust
-
 # TODO (Mikhail): Time zones are very hacky right now. Eventually, I will try adopting Martin's datetime module in `forge-tools` instead.
 comptime UTC = "UTC"
 """UTC string constant."""
@@ -16,7 +14,7 @@ fn _is_numeric(c: Byte) -> Bool:
     Returns:
         True if the character is numeric, False otherwise.
     """
-    return c >= ord("0") and c <= ord("9")
+    return c >= Byte(ord("0")) and c <= Byte(ord("9"))
 
 
 fn from_utc(timestamp: StringSlice) raises -> TimeZone:
@@ -48,8 +46,8 @@ fn from_utc(timestamp: StringSlice) raises -> TimeZone:
 
     if (
         len(timestamp) < i + 2
-        or not _is_numeric(ord(timestamp[i : i + 1]))
-        or not _is_numeric(ord(timestamp[i + 1 : i + 2]))
+        or not _is_numeric(Byte(ord(timestamp[i : i + 1])))
+        or not _is_numeric(Byte(ord(timestamp[i + 1 : i + 2])))
     ):
         raise Error("Received invalid UTC string format.")
     var hours = atol(timestamp[i : i + 2])
@@ -60,7 +58,7 @@ fn from_utc(timestamp: StringSlice) raises -> TimeZone:
         minutes = 0
     elif len(timestamp) == i + 3 and timestamp[i : i + 1] == ":":
         minutes = atol(timestamp[i + 1 : i + 3])
-    elif len(timestamp) == i + 2 and _is_numeric(ord(timestamp[i : i + 1])):
+    elif len(timestamp) == i + 2 and _is_numeric(Byte(ord(timestamp[i : i + 1]))):
         minutes = atol(timestamp[i : i + 2])
     else:
         raise Error("`timestamp` format is invalid")
@@ -1201,8 +1199,8 @@ struct TimeZone(Copyable, ImplicitlyCopyable, Movable):
         else:
             sign = "+"
             offset_abs = self.offset
-        var hours = rjust(String(offset_abs // 3600), 2, "0")
-        var minutes = rjust(String(offset_abs % 3600), 2, "0")
+        var hours = String(offset_abs // 3600).ascii_rjust(2, "0")
+        var minutes = String(offset_abs % 3600).ascii_rjust(2, "0")
         return String(sign, hours, separator, minutes)
 
     @staticmethod

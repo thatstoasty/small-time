@@ -12,10 +12,10 @@ from small_time.small_time import SmallTime, Specification, from_ordinal, from_t
 fn assert_datetime_equal(dt: SmallTime, py_dt: PythonObject) raises:
     testing.assert_true(
         dt.year == UInt(Int(String(py_dt.year)))
-        and dt.month == Int(String(py_dt.month))
-        and dt.hour == Int(String(py_dt.hour))
-        and dt.minute == Int(String(py_dt.minute))
-        and dt.second == Int(String(py_dt.second)),
+        and dt.month == UInt8(Int(String(py_dt.month)))
+        and dt.hour == UInt8(Int(String(py_dt.hour)))
+        and dt.minute == UInt8(Int(String(py_dt.minute)))
+        and dt.second == UInt8(Int(String(py_dt.second))),
         "dt: " + String(dt) + " is not equal to py_dt: " + String(py_dt),
     )
 

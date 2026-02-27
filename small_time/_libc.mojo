@@ -1,7 +1,6 @@
-import sys._libc as libc
-from sys import CompilationTarget
-from ffi import c_char, c_int, c_long, c_uchar, external_call
-from sys.ffi import get_errno
+import std.sys._libc as libc
+from std.ffi import c_char, c_int, c_long, c_uchar, external_call, get_errno
+from std.sys import CompilationTarget
 
 
 comptime time_t = Int64
@@ -16,8 +15,7 @@ comptime MutExternalUnsafePointer = UnsafePointer[origin=MutExternalOrigin]
 
 
 @fieldwise_init
-@register_passable("trivial")
-struct _CTimeValue(ImplicitlyCopyable):
+struct _CTimeValue(ImplicitlyCopyable, TrivialRegisterPassable):
     """C `TimeValue` struct."""
 
     var seconds: time_t
@@ -27,8 +25,7 @@ struct _CTimeValue(ImplicitlyCopyable):
 
 
 @fieldwise_init
-@register_passable("trivial")
-struct _CTimeZone(ImplicitlyCopyable):
+struct _CTimeZone(ImplicitlyCopyable, TrivialRegisterPassable):
     """C `timezone` struct."""
 
     var minutes_west: c_int

@@ -1,4 +1,4 @@
-from small_time.util import lut, rjust
+from small_time.util import lut
 
 
 comptime MONTH_NAMES: InlineArray[String, 13] = [
@@ -81,8 +81,7 @@ struct Token(Equatable, ImplicitlyCopyable):
 
 
 @fieldwise_init
-@register_passable("trivial")
-struct BracketBounds(ImplicitlyCopyable):
+struct BracketBounds(ImplicitlyCopyable, TrivialRegisterPassable):
     """Bracket bounds."""
 
     var start: Int
@@ -205,14 +204,14 @@ fn replace[template: StringSlice](time: SmallTime) -> String:
     if len(template) == 0:
         return String()
 
-    var matched_byte = 0
+    var matched_byte: UInt8 = 0
     var matched_count = 0
 
     var result = String()
 
     @parameter
     for i in range(len(template)):
-        var byte = ord(template[i : i + 1])
+        var byte = Byte(ord(template[i : i + 1]))
         # If the current character is not a token, add it to the result.
         if byte > 127 or lut[SUB_CHARS](byte) == 0:
             if matched_byte > 0:
@@ -254,14 +253,14 @@ fn replace_token(time: SmallTime, token: Byte, token_count: Int) -> String:
         if token_count == 1:
             return "Y"
         if token_count == 2:
-            return String(rjust(String(time.year), 4, "0")[2:4])
+            return String(String(time.year).ascii_rjust(4, "0")[2:4])
         if token_count == 4:
-            return rjust(String(time.year), 4, "0")
+            return String(String(time.year).ascii_rjust(4, "0"))
     elif token == Token._M:
         if token_count == 1:
             return String(time.month)
         if token_count == 2:
-            return rjust(String(time.month), 2, "0")
+            return String(String(time.month).ascii_rjust(2, "0"))
         if token_count == 3:
             return materialize[MONTH_ABBREVIATIONS]()[time.month]
         if token_count == 4:
@@ -270,12 +269,12 @@ fn replace_token(time: SmallTime, token: Byte, token_count: Int) -> String:
         if token_count == 1:
             return String(time.day)
         if token_count == 2:
-            return rjust(String(time.day), 2, "0")
+            return String(String(time.day).ascii_rjust(2, "0"))
     elif token == Token._H:
         if token_count == 1:
             return String(time.hour)
         if token_count == 2:
-            return rjust(String(time.hour), 2, "0")
+            return String(String(time.hour).ascii_rjust(2, "0"))
     elif token == Token._h:
         var h_12 = time.hour
         if time.hour > 12:
@@ -283,30 +282,30 @@ fn replace_token(time: SmallTime, token: Byte, token_count: Int) -> String:
         if token_count == 1:
             return String(h_12)
         if token_count == 2:
-            return rjust(String(h_12), 2, "0")
+            return String(String(h_12).ascii_rjust(2, "0"))
     elif token == Token._m:
         if token_count == 1:
             return String(time.minute)
         if token_count == 2:
-            return rjust(String(time.minute), 2, "0")
+            return String(String(time.minute).ascii_rjust(2, "0"))
     elif token == Token._s:
         if token_count == 1:
             return String(time.second)
         if token_count == 2:
-            return rjust(String(time.second), 2, "0")
+            return String(String(time.second).ascii_rjust(2, "0"))
     elif token == Token._S:
         if token_count == 1:
             return String(time.microsecond // 100000)
         if token_count == 2:
-            return rjust(String(time.microsecond // 10000), 2, "0")
+            return String(String(time.microsecond // 10000).ascii_rjust(2, "0"))
         if token_count == 3:
-            return rjust(String(time.microsecond // 1000), 3, "0")
+            return String(String(time.microsecond // 1000).ascii_rjust(3, "0"))
         if token_count == 4:
-            return rjust(String(time.microsecond // 100), 4, "0")
+            return String(String(time.microsecond // 100).ascii_rjust(4, "0"))
         if token_count == 5:
-            return rjust(String(time.microsecond // 10), 5, "0")
+            return String(String(time.microsecond // 10).ascii_rjust(5, "0"))
         if token_count == 6:
-            return rjust(String(time.microsecond), 6, "0")
+            return String(String(time.microsecond).ascii_rjust(6, "0"))
     elif token == Token._d:
         if token_count == 1:
             return String(time.iso_weekday())
