@@ -1,7 +1,7 @@
 [workspace]
 description = "Datetime library."
 authors = ["Mikhail Tavarez <miktavarez@gmail.com>"]
-channels = ["conda-forge", "https://conda.modular.com/max", "https://prefix.dev/pixi-build-backends"]
+channels = ["conda-forge", "https://conda.modular.com/max-nightly/", "https://conda.modular.com/max", "https://prefix.dev/pixi-build-backends"]
 platforms = ["osx-arm64", "linux-64", "linux-aarch64"]
 license = "MIT"
 license-file = "LICENSE"
@@ -34,16 +34,16 @@ version = "26.1.0"
 backend = { name = "pixi-build-mojo", version = "*" }
 
 [dependencies]
-mojo = ">=0.26.1.0,<0.26.2.0"
+mojo = ">=0.26.2.0.dev2026020205,<0.27"
 
 [package.host-dependencies]
-mojo-compiler = ">=0.26.1.0,<0.26.2.0"
+mojo-compiler = ">=0.26.2.0.dev2026020205,<0.27"
 
 [package.build-dependencies]
-mojo-compiler = ">=0.26.1.0,<0.26.2.0"
+mojo-compiler = ">=0.26.2.0.dev2026020205,<0.27"
 
 [package.run-dependencies]
-mojo-compiler = ">=0.26.1.0,<0.26.2.0"
+mojo-compiler = ">=0.26.2.0.dev2026020205,<0.27"
 
 [feature.util.dependencies]
 isort = ">=7.0.0,<8"
