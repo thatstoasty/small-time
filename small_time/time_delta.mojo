@@ -104,7 +104,7 @@ struct TimeDelta(Boolable, Comparable, Equatable, ImplicitlyCopyable, Stringable
         Returns:
             Total seconds in the duration.
         """
-        return Float64(((self.days * 86400 + self.seconds) * 10**6 + self.microseconds) / 10**6)
+        return Float64((Float64(self.days * 86400 + self.seconds) * 10**6 + Float64(self.microseconds)) / 10**6)
 
     fn __add__(self, other: Self) -> Self:
         """Adds two time deltas.
