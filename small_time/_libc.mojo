@@ -1,6 +1,7 @@
 import sys._libc as libc
-from sys import CompilationTarget, external_call
-from sys.ffi import c_char, c_int, c_long, c_uchar, get_errno
+from sys import CompilationTarget
+from ffi import c_char, c_int, c_long, c_uchar, external_call
+from sys.ffi import get_errno
 
 
 comptime time_t = Int64

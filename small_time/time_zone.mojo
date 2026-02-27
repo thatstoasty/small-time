@@ -1,3 +1,5 @@
+from small_time.util import rjust
+
 # TODO (Mikhail): Time zones are very hacky right now. Eventually, I will try adopting Martin's datetime module in `forge-tools` instead.
 comptime UTC = "UTC"
 """UTC string constant."""
@@ -1199,8 +1201,8 @@ struct TimeZone(Copyable, ImplicitlyCopyable, Movable):
         else:
             sign = "+"
             offset_abs = self.offset
-        var hours = String(offset_abs // 3600).rjust(2, "0")
-        var minutes = String(offset_abs % 3600).rjust(2, "0")
+        var hours = rjust(String(offset_abs // 3600), 2, "0")
+        var minutes = rjust(String(offset_abs % 3600), 2, "0")
         return String(sign, hours, separator, minutes)
 
     @staticmethod

@@ -1,3 +1,6 @@
+from small_time.util import rjust
+
+
 comptime SECONDS_OF_DAY = 24 * 3600
 """Number of seconds in a day."""
 
@@ -86,10 +89,10 @@ struct TimeDelta(Boolable, Comparable, Equatable, ImplicitlyCopyable, Stringable
             else:
                 writer.write(String(self.days), " day, ")
 
-        writer.write(hh, ":", String(mm).rjust(2, "0"), ":", ss.rjust(2, "0"))
+        writer.write(hh, ":", rjust(String(mm), 2, "0"), ":", rjust(ss, 2, "0"))
 
         if self.microseconds:
-            writer.write(String(self.microseconds).rjust(6, "0"))
+            writer.write(rjust(String(self.microseconds), 6, "0"))
 
     fn __str__(self) -> String:
         """String representation of the duration.
