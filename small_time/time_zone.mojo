@@ -37,29 +37,29 @@ fn from_utc(timestamp: StringSlice) raises -> TimeZone:
 
     var i = 0
     # Skip the UTC prefix.
-    if len(timestamp) > 3 and timestamp[0:3] == UTC:
+    if len(timestamp) > 3 and timestamp[byte=0:3] == UTC:
         i = 3
 
-    var sign = -1 if timestamp[i : i + 1] == DASH else 1
-    if timestamp[i : i + 1] == "+" or timestamp[i : i + 1] == DASH:
+    var sign = -1 if timestamp[byte=i] == DASH else 1
+    if timestamp[byte=i] == "+" or timestamp[byte=i] == DASH:
         i += 1
 
     if (
         len(timestamp) < i + 2
-        or not _is_numeric(Byte(ord(timestamp[i : i + 1])))
-        or not _is_numeric(Byte(ord(timestamp[i + 1 : i + 2])))
+        or not _is_numeric(Byte(ord(timestamp[byte=i])))
+        or not _is_numeric(Byte(ord(timestamp[byte=i + 1])))
     ):
         raise Error("Received invalid UTC string format.")
-    var hours = atol(timestamp[i : i + 2])
+    var hours = atol(timestamp[byte = i : i + 2])
     i += 2
 
     var minutes: Int
     if len(timestamp) <= i:
         minutes = 0
-    elif len(timestamp) == i + 3 and timestamp[i : i + 1] == ":":
-        minutes = atol(timestamp[i + 1 : i + 3])
-    elif len(timestamp) == i + 2 and _is_numeric(Byte(ord(timestamp[i : i + 1]))):
-        minutes = atol(timestamp[i : i + 2])
+    elif len(timestamp) == i + 3 and timestamp[byte = i : i + 1] == ":":
+        minutes = atol(timestamp[byte = i + 1 : i + 3])
+    elif len(timestamp) == i + 2 and _is_numeric(Byte(ord(timestamp[byte = i : i + 1]))):
+        minutes = atol(timestamp[byte = i : i + 2])
     else:
         raise Error("`timestamp` format is invalid")
 

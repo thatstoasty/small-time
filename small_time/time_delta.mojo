@@ -2,7 +2,7 @@ comptime SECONDS_OF_DAY = 24 * 3600
 """Number of seconds in a day."""
 
 
-struct TimeDelta(Boolable, Comparable, Equatable, ImplicitlyCopyable, Stringable, Writable):
+struct TimeDelta(Boolable, Comparable, Equatable, ImplicitlyCopyable, Writable):
     """Time delta."""
 
     var days: Int
@@ -66,11 +66,8 @@ struct TimeDelta(Boolable, Comparable, Equatable, ImplicitlyCopyable, Stringable
         self.seconds = self.seconds % SECONDS_OF_DAY
         self.days += days_
 
-    fn write_to[W: Writer, //](self, mut writer: W):
+    fn write_to(self, mut writer: Some[Writer]):
         """Writes the time delta to a writer.
-
-        Parameters:
-            W: The type of writer to write to.
 
         Args:
             writer: Writer to write to.
@@ -89,14 +86,6 @@ struct TimeDelta(Boolable, Comparable, Equatable, ImplicitlyCopyable, Stringable
 
         if self.microseconds:
             writer.write(String(self.microseconds).ascii_rjust(6, "0"))
-
-    fn __str__(self) -> String:
-        """String representation of the duration.
-
-        Returns:
-            String representation of the duration.
-        """
-        return String.write(self)
 
     fn total_seconds(self) -> Float64:
         """Total seconds in the duration.

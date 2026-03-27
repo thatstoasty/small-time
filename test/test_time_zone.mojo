@@ -1,6 +1,6 @@
-import testing
+from std import testing
+from std.testing import TestSuite
 from small_time.time_zone import TIMEZONE_MAP, TimeZone, from_utc
-from testing import TestSuite
 
 
 fn test_time_zone() raises:
