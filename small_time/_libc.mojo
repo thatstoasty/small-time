@@ -10,8 +10,8 @@ comptime suseconds_t = time_t
 comptime c_void = UInt8
 """C `void` type, used for generic pointers."""
 
-comptime ImmutExternalUnsafePointer = UnsafePointer[origin=ImmutExternalOrigin]
-comptime MutExternalUnsafePointer = UnsafePointer[origin=MutExternalOrigin]
+comptime ImmutExternalUnsafePointer = UnsafePointer[origin=ImmutExternalOrigin, ...]
+comptime MutExternalUnsafePointer = UnsafePointer[origin=MutExternalOrigin, ...]
 
 
 @fieldwise_init
@@ -77,32 +77,40 @@ struct _CTime(ImplicitlyCopyable, Writable):
         self.time_zone_offset = 0
         self.time_zone = ImmutExternalUnsafePointer[c_char]()
 
-    fn write_to[W: Writer, //](self, mut writer: W):
+    fn write_to(self, mut writer: Some[Writer]):
         """Writes the time struct to a writer.
-
-        Parameters:
-            W: The writer type.
 
         Args:
             writer: The writer to write to.
         """
-        writer.write("tm(seconds=", self.seconds)
-        writer.write(", minutes=", self.minutes)
-        writer.write(", hours=", self.hours)
-        writer.write(", day_of_month=", self.day_of_month)
-        writer.write(", month=", self.month)
-        writer.write(", year=", self.year)
-        writer.write(", day_of_week=", self.day_of_week)
-        writer.write(", day_of_year=", self.day_of_year)
-        writer.write(", is_daylight_savings=", self.is_daylight_savings)
-        writer.write(", time_zone_offset=", self.time_zone_offset)
-
+        writer.write(
+            "tm(seconds=",
+            self.seconds,
+            ", minutes=",
+            self.minutes,
+            ", hours=",
+            self.hours,
+            ", day_of_month=",
+            self.day_of_month,
+            ", month=",
+            self.month,
+            ", year=",
+            self.year,
+            ", day_of_week=",
+            self.day_of_week,
+            ", day_of_year=",
+            self.day_of_year,
+            ", is_daylight_savings=",
+            self.is_daylight_savings,
+            ", time_zone_offset=",
+            self.time_zone_offset,
+        )
         if self.time_zone:
             writer.write(", time_zone=", StringSlice(unsafe_from_utf8_ptr=self.time_zone))
         writer.write(")")
 
 
-fn _gettimeofday(tv: MutUnsafePointer[_CTimeValue], tz: MutUnsafePointer[_CTimeZone]) -> c_int:
+fn _gettimeofday(tv: MutUnsafePointer[_CTimeValue, ...], tz: MutUnsafePointer[_CTimeZone, ...]) -> c_int:
     """Gets the current time. It's a wrapper around libc `gettimeofday`.
     The `tv` parameter is a pointer to a `struct timeval` that will be filled.
 
@@ -147,7 +155,7 @@ fn get_time_of_day() raises -> _CTimeValue:
     return tv[0].copy()
 
 
-fn _localtime_r(timep: ImmutUnsafePointer[time_t], result: UnsafePointer[_CTime]) -> None:
+fn _localtime_r(timep: ImmutUnsafePointer[time_t, ...], result: MutUnsafePointer[_CTime, ...]) -> None:
     """Converts a time value to a broken-down local time.
 
     Args:
@@ -183,7 +191,7 @@ fn get_local_time(seconds_since_epoch: time_t) raises -> _CTime:
 
 
 fn _strptime(
-    buf: ImmutUnsafePointer[c_char], format: ImmutUnsafePointer[c_char], tm: UnsafePointer[_CTime]
+    buf: ImmutUnsafePointer[c_char, ...], format: ImmutUnsafePointer[c_char, ...], tm: MutUnsafePointer[_CTime, ...]
 ) -> MutExternalUnsafePointer[c_char]:
     """Parses a time string according to a format string.
 
@@ -243,7 +251,7 @@ fn parse_time_with_format(mut time: String, mut format: String) raises -> _CTime
     return tm[0].copy()
 
 
-fn _gmtime(timep: ImmutUnsafePointer[time_t]) -> MutExternalUnsafePointer[_CTime]:
+fn _gmtime(timep: ImmutUnsafePointer[time_t, ...]) -> MutExternalUnsafePointer[_CTime]:
     """Converts a time value to a broken-down UTC time.
 
     Args:

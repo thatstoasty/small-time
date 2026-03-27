@@ -1,4 +1,4 @@
-from small_time.util import lut
+from small_time.util import lut, as_byte
 
 
 comptime MONTH_NAMES: InlineArray[String, 13] = [
@@ -64,20 +64,20 @@ struct Token(Equatable, ImplicitlyCopyable):
     var char: Byte
     """The character of the token."""
 
-    comptime _Y = Byte(ord("Y"))
-    comptime _M = Byte(ord("M"))
-    comptime _D = Byte(ord("D"))
-    comptime _d = Byte(ord("d"))
-    comptime _H = Byte(ord("H"))
-    comptime _h = Byte(ord("h"))
-    comptime _m = Byte(ord("m"))
-    comptime _s = Byte(ord("s"))
-    comptime _S = Byte(ord("S"))
-    comptime _X = Byte(ord("X"))
-    comptime _x = Byte(ord("x"))
-    comptime _Z = Byte(ord("Z"))
-    comptime _A = Byte(ord("A"))
-    comptime _a = Byte(ord("a"))
+    comptime _Y = as_byte["Y"]()
+    comptime _M = as_byte["M"]()
+    comptime _D = as_byte["D"]()
+    comptime _d = as_byte["d"]()
+    comptime _H = as_byte["H"]()
+    comptime _h = as_byte["h"]()
+    comptime _m = as_byte["m"]()
+    comptime _s = as_byte["s"]()
+    comptime _S = as_byte["S"]()
+    comptime _X = as_byte["X"]()
+    comptime _x = as_byte["x"]()
+    comptime _Z = as_byte["Z"]()
+    comptime _A = as_byte["A"]()
+    comptime _a = as_byte["a"]()
 
 
 @fieldwise_init
@@ -102,12 +102,11 @@ fn find_brackets[template: StringSlice]() -> List[BracketBounds]:
     var in_bracket = False
     var brackets = List[BracketBounds]()
 
-    @parameter
-    for i in range(len(template)):
-        if template[i : i + 1] == "[" and not in_bracket:
+    comptime for i in range(len(template)):
+        if template[byte = i : i + 1] == "[" and not in_bracket:
             brackets.append(BracketBounds(i, -1))
             in_bracket = True
-        elif template[i : i + 1] == "]" and in_bracket:
+        elif template[byte = i : i + 1] == "]" and in_bracket:
             brackets[-1].end = i
             in_bracket = False
 
@@ -153,37 +152,36 @@ fn format[template: StringSlice](time: SmallTime) -> String:
     Returns:
         Formatted time string.
     """
-
-    @parameter
-    if len(template) == 0:
+    comptime if len(template) == 0:
         return String()
 
     comptime bounds = find_brackets[template]()
     var b = materialize[bounds]()
 
-    @parameter
-    if len(bounds) == 0:
+    comptime if len(bounds) == 0:
         # No brackets found, just replace the template.
         return replace[template](time)
     elif len(bounds) == 1:
         return String(
-            replace[template[: bounds[0].start]](time),
-            template[b[0].start + 1 : b[0].end],
-            replace[template[bounds[0].end + 1 :]](time),
+            replace[template[byte = 0 : bounds[0].start]](time),
+            template[byte = b[0].start + 1 : b[0].end],
+            replace[template[byte = bounds[0].end + 1 :]](time),
         )
     else:
-        var result = String(replace[template[: bounds[0].start]](time), template[b[0].start + 1 : b[0].end])
+        var result = String(
+            replace[template[byte = 0 : bounds[0].start]](time), template[byte = b[0].start + 1 : b[0].end]
+        )
 
-        @parameter
-        for i in range(1, len(bounds)):
+        comptime for i in range(1, len(bounds)):
             comptime start = bounds[i].start
             comptime end = bounds[i].end
-            result.write(replace[template[bounds[i - 1].end + 1 : start]](time), template[start + 1 : end])
+            result.write(
+                replace[template[byte = bounds[i - 1].end + 1 : start]](time), template[byte = start + 1 : end]
+            )
 
-            @parameter
-            if i == len(bounds) - 1:
+            comptime if i == len(bounds) - 1:
                 # Replace the last part of the template after the last bracket.
-                result.write(replace[template[end + 1 :]](time))
+                result.write(replace[template[byte = end + 1 :]](time))
         return result^
 
 
@@ -200,8 +198,7 @@ fn replace[template: StringSlice](time: SmallTime) -> String:
         Formatted time string.
     """
 
-    @parameter
-    if len(template) == 0:
+    comptime if len(template) == 0:
         return String()
 
     var matched_byte: UInt8 = 0
@@ -209,16 +206,15 @@ fn replace[template: StringSlice](time: SmallTime) -> String:
 
     var result = String()
 
-    @parameter
-    for i in range(len(template)):
-        var byte = Byte(ord(template[i : i + 1]))
+    comptime for i in range(len(template)):
+        var byte = Byte(ord(template[byte=i]))
         # If the current character is not a token, add it to the result.
         if byte > 127 or lut[SUB_CHARS](byte) == 0:
             if matched_byte > 0:
                 # If we have a matched token, replace it with the corresponding value.
                 result.write(replace_token(time, matched_byte, matched_count))
                 matched_byte = 0
-            result.write(template[i : i + 1])
+            result.write(template[byte=i])
             continue
 
         # If the current character is the same as the previous one, increment the count.
@@ -253,7 +249,7 @@ fn replace_token(time: SmallTime, token: Byte, token_count: Int) -> String:
         if token_count == 1:
             return "Y"
         if token_count == 2:
-            return String(String(time.year).ascii_rjust(4, "0")[2:4])
+            return String(String(time.year).ascii_rjust(4, "0")[byte=2:4])
         if token_count == 4:
             return String(String(time.year).ascii_rjust(4, "0"))
     elif token == Token._M:

@@ -338,7 +338,7 @@ struct Specification(Equatable, ImplicitlyCopyable, TrivialRegisterPassable):
         return self.value != other.value
 
 
-struct SmallTime(Equatable, ImplicitlyCopyable, Representable, Stringable, Writable):
+struct SmallTime(Equatable, ImplicitlyCopyable, Writable):
     """Datetime representation."""
 
     var year: UInt
@@ -443,10 +443,9 @@ struct SmallTime(Equatable, ImplicitlyCopyable, Representable, Stringable, Writa
             "-",
             String(self.day).ascii_rjust(2, "0"),
         )
-        var time = String()
+        var time = String(capacity=64)
 
-        @parameter
-        if specification == Specification.AUTO or specification == Specification.MICROSECONDS:
+        comptime if specification == Specification.AUTO or specification == Specification.MICROSECONDS:
             time = String(
                 String(self.hour).ascii_rjust(2, "0"),
                 ":",
@@ -502,14 +501,6 @@ struct SmallTime(Equatable, ImplicitlyCopyable, Representable, Stringable, Writa
         """
         return UInt16(self.to_ordinal() % 7 or 7)
 
-    fn __str__(self) -> String:
-        """Return the string representation of the `SmallTime` instance.
-
-        Returns:
-            The string representation.
-        """
-        return self.isoformat()
-
     fn __repr__(self) -> String:
         """Return the string representation of the `SmallTime` instance.
 
@@ -533,11 +524,16 @@ struct SmallTime(Equatable, ImplicitlyCopyable, Representable, Stringable, Writa
         var secs2 = Int(other.second + other.minute * 60 + other.hour * 3600)
         return TimeDelta(days1 - days2, secs1 - secs2, Int(self.microsecond) - Int(other.microsecond))
 
-    fn write_to[W: Writer, //](self, mut writer: W):
+    fn write_to(self, mut writer: Some[Writer]):
         """Writes a representation of the `SmallTime` instance to a writer.
 
-        Parameters:
-            W: The type of writer to write the contents to.
+        Args:
+            writer: The writer to write the contents to.
+        """
+        writer.write(self.isoformat())
+
+    fn write_repr_to(self, mut writer: Some[Writer]):
+        """Writes a representation of the `SmallTime` instance to a writer.
 
         Args:
             writer: The writer to write the contents to.

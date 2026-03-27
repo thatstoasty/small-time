@@ -1,10 +1,9 @@
 import small_time._libc as libc
-import testing
+from std import testing
+from std.testing import TestSuite
+from std.python import PythonObject
 from _py import py_dt_datetime, py_time
-from python import PythonObject
 from small_time.time_zone import TIMEZONE_MAP, TimeZone, from_utc
-from testing import TestSuite
-
 from small_time.small_time import SmallTime, Specification, from_ordinal, from_timestamp, now, parse_time_with_format
 
 

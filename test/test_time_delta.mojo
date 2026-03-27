@@ -1,6 +1,5 @@
-import testing
-from testing import TestSuite
-
+from std import testing
+from std.testing import TestSuite
 from small_time import TimeDelta
 
 
