@@ -1,3 +1,5 @@
+"""Time delta implementation."""
+
 comptime SECONDS_OF_DAY = 24 * 3600
 """Number of seconds in a day."""
 
@@ -12,7 +14,7 @@ struct TimeDelta(Boolable, Comparable, Equatable, ImplicitlyCopyable, Writable):
     var microseconds: Int
     """Microseconds."""
 
-    fn __init__(
+    def __init__(
         out self,
         days: Int = 0,
         seconds: Int = 0,
@@ -66,7 +68,7 @@ struct TimeDelta(Boolable, Comparable, Equatable, ImplicitlyCopyable, Writable):
         self.seconds = self.seconds % SECONDS_OF_DAY
         self.days += days_
 
-    fn write_to(self, mut writer: Some[Writer]):
+    def write_to(self, mut writer: Some[Writer]):
         """Writes the time delta to a writer.
 
         Args:
@@ -87,7 +89,7 @@ struct TimeDelta(Boolable, Comparable, Equatable, ImplicitlyCopyable, Writable):
         if self.microseconds:
             writer.write(String(self.microseconds).ascii_rjust(6, "0"))
 
-    fn total_seconds(self) -> Float64:
+    def total_seconds(self) -> Float64:
         """Total seconds in the duration.
 
         Returns:
@@ -95,7 +97,7 @@ struct TimeDelta(Boolable, Comparable, Equatable, ImplicitlyCopyable, Writable):
         """
         return Float64((Float64(self.days * 86400 + self.seconds) * 10**6 + Float64(self.microseconds)) / 10**6)
 
-    fn __add__(self, other: Self) -> Self:
+    def __add__(self, other: Self) -> Self:
         """Adds two time deltas.
 
         Args:
@@ -110,7 +112,7 @@ struct TimeDelta(Boolable, Comparable, Equatable, ImplicitlyCopyable, Writable):
             self.microseconds + other.microseconds,
         )
 
-    fn __radd__(self, other: Self) -> Self:
+    def __radd__(self, other: Self) -> Self:
         """Adds two time deltas.
 
         Args:
@@ -121,7 +123,7 @@ struct TimeDelta(Boolable, Comparable, Equatable, ImplicitlyCopyable, Writable):
         """
         return self.__add__(other)
 
-    fn __sub__(self, other: Self) -> Self:
+    def __sub__(self, other: Self) -> Self:
         """Subtracts two time deltas.
 
         Args:
@@ -136,7 +138,7 @@ struct TimeDelta(Boolable, Comparable, Equatable, ImplicitlyCopyable, Writable):
             self.microseconds - other.microseconds,
         )
 
-    fn __rsub__(self, other: Self) -> Self:
+    def __rsub__(self, other: Self) -> Self:
         """Subtracts two time deltas.
 
         Args:
@@ -151,7 +153,7 @@ struct TimeDelta(Boolable, Comparable, Equatable, ImplicitlyCopyable, Writable):
             other.microseconds - self.microseconds,
         )
 
-    fn __neg__(self) -> Self:
+    def __neg__(self) -> Self:
         """Negates the time delta.
 
         Returns:
@@ -159,7 +161,7 @@ struct TimeDelta(Boolable, Comparable, Equatable, ImplicitlyCopyable, Writable):
         """
         return Self(-self.days, -self.seconds, -self.microseconds)
 
-    fn __pos__(self) -> Self:
+    def __pos__(self) -> Self:
         """Returns the time delta.
 
         Returns:
@@ -178,7 +180,7 @@ struct TimeDelta(Boolable, Comparable, Equatable, ImplicitlyCopyable, Writable):
         else:
             return self
 
-    fn __mul__(self, other: Int) -> Self:
+    def __mul__(self, other: Int) -> Self:
         """Multiplies the time delta by a scalar.
 
         Args:
@@ -193,7 +195,7 @@ struct TimeDelta(Boolable, Comparable, Equatable, ImplicitlyCopyable, Writable):
             self.microseconds * other,
         )
 
-    fn __rmul__(self, other: Int) -> Self:
+    def __rmul__(self, other: Int) -> Self:
         """Multiplies the time delta by a scalar.
 
         Args:
@@ -204,7 +206,7 @@ struct TimeDelta(Boolable, Comparable, Equatable, ImplicitlyCopyable, Writable):
         """
         return self.__mul__(other)
 
-    fn _to_microseconds(self) -> Int:
+    def _to_microseconds(self) -> Int:
         """Converts the time delta to microseconds.
 
         Returns:
@@ -212,7 +214,7 @@ struct TimeDelta(Boolable, Comparable, Equatable, ImplicitlyCopyable, Writable):
         """
         return (self.days * SECONDS_OF_DAY + self.seconds) * 1000000 + self.microseconds
 
-    fn __mod__(self, other: Self) -> Self:
+    def __mod__(self, other: Self) -> Self:
         """Returns the remainder of the division of two time deltas.
 
         Args:
@@ -223,7 +225,7 @@ struct TimeDelta(Boolable, Comparable, Equatable, ImplicitlyCopyable, Writable):
         """
         return Self(0, 0, self._to_microseconds() % other._to_microseconds())
 
-    fn __eq__(self, other: Self) -> Bool:
+    def __eq__(self, other: Self) -> Bool:
         """Checks if two time deltas are equal.
 
         Args:
@@ -234,7 +236,7 @@ struct TimeDelta(Boolable, Comparable, Equatable, ImplicitlyCopyable, Writable):
         """
         return self.days == other.days and self.seconds == other.seconds and self.microseconds == other.microseconds
 
-    fn __le__(self, other: Self) -> Bool:
+    def __le__(self, other: Self) -> Bool:
         """Checks if the time delta is less than or equal to the other time delta.
 
         Args:
@@ -252,7 +254,7 @@ struct TimeDelta(Boolable, Comparable, Equatable, ImplicitlyCopyable, Writable):
                 return True
         return False
 
-    fn __lt__(self, other: Self) -> Bool:
+    def __lt__(self, other: Self) -> Bool:
         """Checks if the time delta is less than the other time delta.
 
         Args:
@@ -270,7 +272,7 @@ struct TimeDelta(Boolable, Comparable, Equatable, ImplicitlyCopyable, Writable):
                 return True
         return False
 
-    fn __ge__(self, other: Self) -> Bool:
+    def __ge__(self, other: Self) -> Bool:
         """Checks if the time delta is greater than or equal to the other time delta.
 
         Args:
@@ -281,7 +283,7 @@ struct TimeDelta(Boolable, Comparable, Equatable, ImplicitlyCopyable, Writable):
         """
         return not self.__lt__(other)
 
-    fn __gt__(self, other: Self) -> Bool:
+    def __gt__(self, other: Self) -> Bool:
         """Checks if the time delta is greater than the other time delta.
 
         Args:
@@ -292,7 +294,7 @@ struct TimeDelta(Boolable, Comparable, Equatable, ImplicitlyCopyable, Writable):
         """
         return not self.__le__(other)
 
-    fn __bool__(self) -> Bool:
+    def __bool__(self) -> Bool:
         """Checks if the time delta is non-zero.
 
         Returns:

@@ -1,3 +1,5 @@
+"""Utility functions and types for the small-time library."""
+
 from std.builtin.globals import global_constant
 
 
@@ -11,7 +13,7 @@ Parameters:
 
 
 @always_inline
-fn lut[I: Indexer, //, A: StackArray](i: I) -> A.ElementType:
+def lut[I: Indexer, //, A: StackArray](i: I) -> A.ElementType:
     """Returns the value at the given index from a global constant array.
 
     Parameters:
@@ -27,7 +29,7 @@ fn lut[I: Indexer, //, A: StackArray](i: I) -> A.ElementType:
     return global_constant[A]().unsafe_get(i).copy()
 
 
-fn as_byte[char: StringSlice]() -> Byte:
+def as_byte[char: StringSlice]() -> Byte:
     """Converts a character to a byte.
 
     Parameters:
@@ -36,5 +38,5 @@ fn as_byte[char: StringSlice]() -> Byte:
     Returns:
         The byte representation of the character.
     """
-    comptime assert len(char) == 1, "Input must be a single character."
+    comptime assert char.byte_length() == 1, "Input must be a single character."
     return char.as_bytes()[0]

@@ -90,7 +90,7 @@ struct BracketBounds(ImplicitlyCopyable, TrivialRegisterPassable):
     """End index of the bracket."""
 
 
-fn find_brackets[template: StringSlice]() -> List[BracketBounds]:
+def find_brackets[template: StringSlice]() -> List[BracketBounds]:
     """Finds the start index of the first bracket in the template.
 
     Parameters:
@@ -102,18 +102,18 @@ fn find_brackets[template: StringSlice]() -> List[BracketBounds]:
     var in_bracket = False
     var brackets = List[BracketBounds]()
 
-    comptime for i in range(len(template)):
+    comptime for i in range(template.byte_length()):
         if template[byte = i : i + 1] == "[" and not in_bracket:
             brackets.append(BracketBounds(i, -1))
             in_bracket = True
         elif template[byte = i : i + 1] == "]" and in_bracket:
-            brackets[-1].end = i
+            brackets[len(brackets) - 1].end = i
             in_bracket = False
 
     return brackets^
 
 
-fn build_formatter_lookup(out chars: InlineArray[Int, 128]):
+def build_formatter_lookup(out chars: InlineArray[Int, 128]):
     """Builds the formatter lookup table.
 
     Returns:
@@ -139,7 +139,7 @@ comptime SUB_CHARS = build_formatter_lookup()
 
 
 # TODO (Mikhail): Add support for "Do" for day of the month with ordinal suffix (1st, 2nd, 3rd, etc.)
-fn format[template: StringSlice](time: SmallTime) -> String:
+def format[template: StringSlice](time: SmallTime) -> String:
     """Formats the given time value using the specified format string.
     `"YYYY[abc]MM" -> replace("YYYY") + "abc" + replace("MM")`.
 
@@ -152,7 +152,7 @@ fn format[template: StringSlice](time: SmallTime) -> String:
     Returns:
         Formatted time string.
     """
-    comptime if len(template) == 0:
+    comptime if template.byte_length() == 0:
         return String()
 
     comptime bounds = find_brackets[template]()
@@ -185,7 +185,7 @@ fn format[template: StringSlice](time: SmallTime) -> String:
         return result^
 
 
-fn replace[template: StringSlice](time: SmallTime) -> String:
+def replace[template: StringSlice](time: SmallTime) -> String:
     """Replaces the tokens in the given format string with the corresponding values.
 
     Parameters:
@@ -198,7 +198,7 @@ fn replace[template: StringSlice](time: SmallTime) -> String:
         Formatted time string.
     """
 
-    comptime if len(template) == 0:
+    comptime if template.byte_length() == 0:
         return String()
 
     var matched_byte: UInt8 = 0
@@ -206,7 +206,7 @@ fn replace[template: StringSlice](time: SmallTime) -> String:
 
     var result = String()
 
-    comptime for i in range(len(template)):
+    comptime for i in range(template.byte_length()):
         var byte = Byte(ord(template[byte=i]))
         # If the current character is not a token, add it to the result.
         if byte > 127 or lut[SUB_CHARS](byte) == 0:
@@ -234,7 +234,7 @@ fn replace[template: StringSlice](time: SmallTime) -> String:
     return result
 
 
-fn replace_token(time: SmallTime, token: Byte, token_count: Int) -> String:
+def replace_token(time: SmallTime, token: Byte, token_count: Int) -> String:
     """Replaces the given token with the corresponding value from the SmallTime object.
 
     Args:

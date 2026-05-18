@@ -60,10 +60,10 @@ struct _CTime(ImplicitlyCopyable, Writable):
     zero if it is not, and negative if the information is not available."""
     var time_zone_offset: c_long
     """The difference, in seconds, of the timezone represented by this broken-down time and UTC"""
-    var time_zone: ImmutExternalUnsafePointer[c_char]
+    var time_zone: Optional[ImmutExternalUnsafePointer[c_char]]
     """Pointer to a string representing the timezone name, e.g. "UTC", "America/New_York"."""
 
-    fn __init__(out self):
+    def __init__(out self):
         """Initializes a new time struct."""
         self.seconds = 0
         self.minutes = 0
@@ -75,9 +75,9 @@ struct _CTime(ImplicitlyCopyable, Writable):
         self.day_of_year = 0
         self.is_daylight_savings = 0
         self.time_zone_offset = 0
-        self.time_zone = ImmutExternalUnsafePointer[c_char]()
+        self.time_zone = None
 
-    fn write_to(self, mut writer: Some[Writer]):
+    def write_to(self, mut writer: Some[Writer]):
         """Writes the time struct to a writer.
 
         Args:
@@ -106,11 +106,11 @@ struct _CTime(ImplicitlyCopyable, Writable):
             self.time_zone_offset,
         )
         if self.time_zone:
-            writer.write(", time_zone=", StringSlice(unsafe_from_utf8_ptr=self.time_zone))
+            writer.write(", time_zone=", StringSlice(unsafe_from_utf8_ptr=self.time_zone.value()))
         writer.write(")")
 
 
-fn _gettimeofday(tv: MutUnsafePointer[_CTimeValue, ...], tz: MutUnsafePointer[_CTimeZone, ...]) -> c_int:
+def _gettimeofday(tv: MutUnsafePointer[_CTimeValue, ...], tz: MutUnsafePointer[_CTimeZone, ...]) -> c_int:
     """Gets the current time. It's a wrapper around libc `gettimeofday`.
     The `tv` parameter is a pointer to a `struct timeval` that will be filled.
 
@@ -130,7 +130,7 @@ fn _gettimeofday(tv: MutUnsafePointer[_CTimeValue, ...], tz: MutUnsafePointer[_C
     return external_call["gettimeofday", c_int, type_of(tv), type_of(tz)](tv, tz)
 
 
-fn get_time_of_day() raises -> _CTimeValue:
+def get_time_of_day() raises -> _CTimeValue:
     """Gets the current time. Wrapper around libc `gettimeofday`.
 
     Returns:
@@ -155,7 +155,7 @@ fn get_time_of_day() raises -> _CTimeValue:
     return tv[0].copy()
 
 
-fn _localtime_r(timep: ImmutUnsafePointer[time_t, ...], result: MutUnsafePointer[_CTime, ...]) -> None:
+def _localtime_r(timep: ImmutUnsafePointer[time_t, ...], result: MutUnsafePointer[_CTime, ...]) -> None:
     """Converts a time value to a broken-down local time.
 
     Args:
@@ -170,7 +170,7 @@ fn _localtime_r(timep: ImmutUnsafePointer[time_t, ...], result: MutUnsafePointer
     _ = external_call["localtime_r", ImmutExternalUnsafePointer[_CTime], type_of(timep), type_of(result)](timep, result)
 
 
-fn get_local_time(seconds_since_epoch: time_t) raises -> _CTime:
+def get_local_time(seconds_since_epoch: time_t) raises -> _CTime:
     """Converts a time value to a broken-down local time.
 
     Args:
@@ -183,14 +183,10 @@ fn get_local_time(seconds_since_epoch: time_t) raises -> _CTime:
     """
     var result = InlineArray[_CTime, 1](uninitialized=True)
     _localtime_r(UnsafePointer(to=seconds_since_epoch), result.unsafe_ptr())
-    if not result.unsafe_ptr():
-        raise Error(
-            "get_local_time failed: The pointer to the result is still null, which indicates the conversion failed."
-        )
     return result[0].copy()
 
 
-fn _strptime(
+def _strptime(
     buf: ImmutUnsafePointer[c_char, ...], format: ImmutUnsafePointer[c_char, ...], tm: MutUnsafePointer[_CTime, ...]
 ) -> MutExternalUnsafePointer[c_char]:
     """Parses a time string according to a format string.
@@ -219,7 +215,7 @@ fn _strptime(
     ](buf, format, tm)
 
 
-fn parse_time_with_format(mut time: String, mut format: String) raises -> _CTime:
+def parse_time_with_format(mut time: String, mut format: String) raises -> _CTime:
     """Parses a time string according to a format string.
 
     Args:
@@ -242,16 +238,10 @@ fn parse_time_with_format(mut time: String, mut format: String) raises -> _CTime
         format.as_c_string_slice().unsafe_ptr(),
         tm.unsafe_ptr(),
     )
-    if not tm.unsafe_ptr():
-        raise Error(
-            "parse_time_with_format failed: The pointer to the result is still null, which indicates the parsing"
-            " failed."
-        )
-
     return tm[0].copy()
 
 
-fn _gmtime(timep: ImmutUnsafePointer[time_t, ...]) -> MutExternalUnsafePointer[_CTime]:
+def _gmtime(timep: ImmutUnsafePointer[time_t, ...]) -> Optional[MutExternalUnsafePointer[_CTime]]:
     """Converts a time value to a broken-down UTC time.
 
     Args:
@@ -265,10 +255,10 @@ fn _gmtime(timep: ImmutUnsafePointer[time_t, ...]) -> MutExternalUnsafePointer[_
     struct tm *gmtime(const time_t *timep);
     ```
     """
-    return external_call["gmtime", MutExternalUnsafePointer[_CTime], type_of(timep)](timep)
+    return external_call["gmtime", Optional[MutExternalUnsafePointer[_CTime]], type_of(timep)](timep)
 
 
-fn get_gm_time(time: time_t) raises -> _CTime:
+def get_gm_time(time: time_t) raises -> _CTime:
     """Converts a time value to a broken-down UTC time.
 
     Args:
@@ -289,4 +279,4 @@ fn get_gm_time(time: time_t) raises -> _CTime:
         )
 
     # TODO (Mikhail): Maybe copy the result, not sure if take_pointee is safe here.
-    return result.take_pointee()
+    return result.value().take_pointee()
