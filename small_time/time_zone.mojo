@@ -1,3 +1,5 @@
+"""Time zone implementation."""
+
 # TODO (Mikhail): Time zones are very hacky right now. Eventually, I will try adopting Martin's datetime module in `forge-tools` instead.
 comptime UTC = "UTC"
 """UTC string constant."""
@@ -5,7 +7,7 @@ comptime DASH = "-"
 """Dash character constant."""
 
 
-fn _is_numeric(c: Byte) -> Bool:
+def _is_numeric(c: Byte) -> Bool:
     """Checks if a character is numeric.
 
     Args:
@@ -17,7 +19,7 @@ fn _is_numeric(c: Byte) -> Bool:
     return c >= Byte(ord("0")) and c <= Byte(ord("9"))
 
 
-fn from_utc(timestamp: StringSlice) raises -> TimeZone:
+def from_utc(timestamp: StringSlice) raises -> TimeZone:
     """Creates a timezone from a string.
 
     Args:
@@ -29,7 +31,7 @@ fn from_utc(timestamp: StringSlice) raises -> TimeZone:
     Raises:
         Error: If the UTC string is invalid.
     """
-    if len(timestamp) == 0:
+    if timestamp.byte_length() == 0:
         raise Error("Received empty UTC string.")
 
     if timestamp == "utc" or timestamp == UTC or timestamp == "Z":
@@ -37,7 +39,7 @@ fn from_utc(timestamp: StringSlice) raises -> TimeZone:
 
     var i = 0
     # Skip the UTC prefix.
-    if len(timestamp) > 3 and timestamp[byte=0:3] == UTC:
+    if timestamp.byte_length() > 3 and timestamp[byte=0:3] == UTC:
         i = 3
 
     var sign = -1 if timestamp[byte=i] == DASH else 1
@@ -45,7 +47,7 @@ fn from_utc(timestamp: StringSlice) raises -> TimeZone:
         i += 1
 
     if (
-        len(timestamp) < i + 2
+        timestamp.byte_length() < i + 2
         or not _is_numeric(Byte(ord(timestamp[byte=i])))
         or not _is_numeric(Byte(ord(timestamp[byte=i + 1])))
     ):
@@ -54,11 +56,11 @@ fn from_utc(timestamp: StringSlice) raises -> TimeZone:
     i += 2
 
     var minutes: Int
-    if len(timestamp) <= i:
+    if timestamp.byte_length() <= i:
         minutes = 0
-    elif len(timestamp) == i + 3 and timestamp[byte = i : i + 1] == ":":
+    elif timestamp.byte_length() == i + 3 and timestamp[byte = i : i + 1] == ":":
         minutes = atol(timestamp[byte = i + 1 : i + 3])
-    elif len(timestamp) == i + 2 and _is_numeric(Byte(ord(timestamp[byte = i : i + 1]))):
+    elif timestamp.byte_length() == i + 2 and _is_numeric(Byte(ord(timestamp[byte = i : i + 1]))):
         minutes = atol(timestamp[byte = i : i + 2])
     else:
         raise Error("`timestamp` format is invalid")
@@ -1172,7 +1174,7 @@ struct TimeZone(Copyable, ImplicitlyCopyable, Movable):
     comptime EUROPE_ISLE_OF_MAN = Self(name="Europe/Isle_of_Man", offset=0)
     """Europe/Isle_of_Man timezone."""
 
-    fn __init__(out self, name: StringLiteral, offset: Int):
+    def __init__(out self, name: StringLiteral, offset: Int):
         """Initializes a new timezone.
 
         Args:
@@ -1182,7 +1184,7 @@ struct TimeZone(Copyable, ImplicitlyCopyable, Movable):
         self.name = String(name)
         self.offset = offset
 
-    fn format(self, separator: String = ":") -> String:
+    def format(self, separator: String = ":") -> String:
         """Formats the timezone.
 
         Args:
@@ -1204,7 +1206,7 @@ struct TimeZone(Copyable, ImplicitlyCopyable, Movable):
         return String(sign, hours, separator, minutes)
 
     @staticmethod
-    fn from_utc_offset(offset: Int) raises -> Self:
+    def from_utc_offset(offset: Int) raises -> Self:
         """Creates a new timezone from its UTC offset.
 
         Args:

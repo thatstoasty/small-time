@@ -1,3 +1,4 @@
+"""Calendar math functions."""
 from small_time.util import lut
 
 
@@ -23,7 +24,7 @@ comptime _DAYS_IN_MONTH: InlineArray[UInt8, 13] = [-1, 31, 28, 31, 30, 31, 30, 3
 """Number of days in each month, not counting leap years."""
 
 
-fn check_if_leap_year(year: UInt) -> Bool:
+def check_if_leap_year(year: UInt) -> Bool:
     """If the year is a leap year.
 
     Args:
@@ -38,7 +39,7 @@ fn check_if_leap_year(year: UInt) -> Bool:
     return year % 4 == 0 and (year % 100 != 0 or year % 400 == 0)
 
 
-fn days_before_next_calendar_year(year: UInt) -> UInt:
+def days_before_next_calendar_year(year: UInt) -> UInt:
     """Number of days before January 1st of year.
 
     Args:
@@ -54,7 +55,7 @@ fn days_before_next_calendar_year(year: UInt) -> UInt:
     return y * 365 + y // 4 - y // 100 + y // 400
 
 
-fn days_in_month(year: UInt, month: UInt8) -> UInt8:
+def days_in_month(year: UInt, month: UInt8) -> UInt8:
     """Number of days in a month in a year.
 
     Args:
@@ -72,7 +73,7 @@ fn days_in_month(year: UInt, month: UInt8) -> UInt8:
     return lut[_DAYS_IN_MONTH](month)
 
 
-fn days_before_month(year: UInt, month: UInt8) -> UInt16:
+def days_before_month(year: UInt, month: UInt8) -> UInt16:
     """Number of days in year preceding first day of month.
 
     Args:
@@ -90,7 +91,7 @@ fn days_before_month(year: UInt, month: UInt8) -> UInt16:
     return lut[_DAYS_BEFORE_MONTH](month)
 
 
-fn ymd_to_ordinal(year: UInt, month: UInt8, day: UInt8) -> UInt:
+def ymd_to_ordinal(year: UInt, month: UInt8, day: UInt8) -> UInt:
     """Convert year, month, day to ordinal, considering `01-Jan-0001` as day 1.
 
     Args:

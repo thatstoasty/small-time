@@ -3,7 +3,7 @@ from std.testing import TestSuite
 from small_time import TimeDelta
 
 
-fn test_timedelta() raises:
+def test_timedelta() raises:
     testing.assert_equal(TimeDelta(3, 2, 100).total_seconds(), 259202.0001)
     testing.assert_true(TimeDelta(2, 1, 50).__add__(TimeDelta(1, 1, 50)).__eq__(TimeDelta(3, 2, 100)))
     testing.assert_true(TimeDelta(3, 2, 100).__sub__(TimeDelta(2, 1, 50)).__eq__(TimeDelta(1, 1, 50)))
@@ -33,5 +33,5 @@ fn test_timedelta() raises:
     )
 
 
-fn main() raises:
+def main() raises:
     TestSuite.discover_tests[__functions_in_module()]().run()

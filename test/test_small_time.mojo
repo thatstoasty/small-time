@@ -8,7 +8,7 @@ from small_time.small_time import SmallTime, Specification, from_ordinal, from_t
 
 
 # TODO: Need a better way to test this, since it's not deterministic.
-fn assert_datetime_equal(dt: SmallTime, py_dt: PythonObject) raises:
+def assert_datetime_equal(dt: SmallTime, py_dt: PythonObject) raises:
     testing.assert_true(
         dt.year == UInt(Int(String(py_dt.year)))
         and dt.month == UInt8(Int(String(py_dt.month)))
@@ -19,20 +19,20 @@ fn assert_datetime_equal(dt: SmallTime, py_dt: PythonObject) raises:
     )
 
 
-fn test_now() raises:
+def test_now() raises:
     assert_datetime_equal(py_dt=py_dt_datetime().now(), dt=now())
 
 
-fn test_utc_now() raises:
+def test_utc_now() raises:
     assert_datetime_equal(py_dt=py_dt_datetime().utcnow(), dt=now(utc=True))
 
 
-fn test_from_timestamp() raises:
+def test_from_timestamp() raises:
     assert_datetime_equal(py_dt=py_dt_datetime().now(), dt=from_timestamp(Float64(libc.get_time_of_day().seconds)))
     assert_datetime_equal(py_dt=py_dt_datetime().utcnow(), dt=from_timestamp(Float64(libc.get_time_of_day().seconds), utc=True))
 
 
-fn test_iso_format() raises:
+def test_iso_format() raises:
     var d0 = SmallTime(2023, 10, 1, 0, 0, 0, 1234)
     testing.assert_equal(d0.isoformat(), "2023-10-01T00:00:00.001234+00:00")
     testing.assert_equal(d0.isoformat[Specification.SECONDS](), "2023-10-01T00:00:00+00:00")
@@ -44,7 +44,7 @@ fn test_iso_format() raises:
     testing.assert_equal(d1.isoformat[Specification.SECONDS](), "2023-10-01T00:00:00+08:00")
 
 
-fn test_strptime() raises:
+def test_strptime() raises:
     var m = parse_time_with_format("20-01-2023 15:49:10", "%d-%m-%Y %H:%M:%S")
     testing.assert_equal(String(m), "2023-01-20T15:49:10.000000+00:00")
 
@@ -57,7 +57,7 @@ fn test_strptime() raises:
     testing.assert_equal(String(m), "2023-10-18T15:49:10.000000+09:00")
 
 
-fn test_ordinal() raises:
+def test_ordinal() raises:
     comptime m = SmallTime(2023, 10, 1)
     var o = m.to_ordinal()
     testing.assert_equal(o, 738794)
@@ -68,7 +68,7 @@ fn test_ordinal() raises:
     testing.assert_equal(m.day, 1)
 
 
-fn test_sub() raises:
+def test_sub() raises:
     var rhs = SmallTime(2023, 10, 1, 10, 0, 0)
     var result = SmallTime(2023, 10, 1, 10, 0, 0, 1) - rhs
     testing.assert_equal(result.microseconds, 1)
@@ -91,7 +91,7 @@ fn test_sub() raises:
     testing.assert_equal(String(result), "2 days, 0:01:01")
 
 
-fn test_format() raises:
+def test_format() raises:
     comptime time = SmallTime(2024, 2, 1, 3, 4, 5, 123456)
     testing.assert_equal(time.format["YYYY-MM-DD HH:mm:ss.SSS ZZ"](), "2024-02-01 03:04:05.123 +00:00")
     testing.assert_equal(time.format["Y-YY-YYY-YYYY M-MM D-DD"](), "Y-24--2024 2-02 1-01")
@@ -100,7 +100,7 @@ fn test_format() raises:
     testing.assert_equal(time.format["d-dd-ddd-dddd"](), "4--Thu-Thursday")
 
 
-fn test_format_brackets() raises:
+def test_format_brackets() raises:
     comptime time = SmallTime(2024, 2, 1, 3, 4, 5, 123456)
     # "Do" not supported in SmallTime yet, so skipping this test.
     # testing.assert_equal(m.format[
@@ -119,5 +119,5 @@ fn test_format_brackets() raises:
     testing.assert_equal(time.format["YYYY[Y] [[]MM[]][M]"](), "2024Y [02]M")
 
 
-fn main() raises:
+def main() raises:
     TestSuite.discover_tests[__functions_in_module()]().run()

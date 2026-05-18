@@ -1,3 +1,5 @@
+"""SmallTime is a simple datetime library."""
+
 import small_time._libc as libc
 import small_time.time_zone
 from small_time._formatter import format
@@ -20,7 +22,7 @@ comptime MAX_TIMESTAMP_US = MAX_TIMESTAMP * 1_000_000
 """Maximum timestamp in microseconds."""
 
 
-fn normalize_timestamp(var timestamp: Float64) raises -> Float64:
+def normalize_timestamp(var timestamp: Float64) raises -> Float64:
     """Normalize millisecond and microsecond timestamps into normal timestamps.
 
     Args:
@@ -42,7 +44,7 @@ fn normalize_timestamp(var timestamp: Float64) raises -> Float64:
     return timestamp
 
 
-fn now(*, utc: Bool = False) raises -> SmallTime:
+def now(*, utc: Bool = False) raises -> SmallTime:
     """Return the current time in UTC or local time.
 
     Args:
@@ -57,7 +59,7 @@ fn now(*, utc: Bool = False) raises -> SmallTime:
     return from_timestamp(libc.get_time_of_day(), utc=utc)
 
 
-fn _validate_timestamp(
+def _validate_timestamp(
     tm: libc._CTime, time_zone: TimeZone, time_val: Optional[libc._CTimeValue] = None
 ) raises -> SmallTime:
     """Validate the timestamp.
@@ -113,7 +115,7 @@ fn _validate_timestamp(
     )
 
 
-fn from_timestamp(t: libc._CTimeValue, *, utc: Bool) raises -> SmallTime:
+def from_timestamp(t: libc._CTimeValue, *, utc: Bool) raises -> SmallTime:
     """Create a SmallTime instance from a timestamp.
 
     Args:
@@ -134,7 +136,7 @@ fn from_timestamp(t: libc._CTimeValue, *, utc: Bool) raises -> SmallTime:
     return _validate_timestamp(tm, tz, t)
 
 
-fn from_timestamp(timestamp: Float64, *, utc: Bool = False) raises -> SmallTime:
+def from_timestamp(timestamp: Float64, *, utc: Bool = False) raises -> SmallTime:
     """Create a SmallTime instance from a timestamp.
 
     Args:
@@ -150,7 +152,7 @@ fn from_timestamp(timestamp: Float64, *, utc: Bool = False) raises -> SmallTime:
     return from_timestamp(libc._CTimeValue(Int64(Int(normalize_timestamp(timestamp))), 0), utc=utc)
 
 
-fn parse_time_with_format(date: StringSlice, format: StringSlice, tzinfo: TimeZone = TimeZone.UTC) raises -> SmallTime:
+def parse_time_with_format(date: StringSlice, format: StringSlice, tzinfo: TimeZone = TimeZone.UTC) raises -> SmallTime:
     """Create a `SmallTime` instance from a date string and format,
     in the style of `datetime.strptime`. Optionally replaces the parsed time_zone.
     Due to cstr pointer creation requiring a mutable reference to `date` and `format` to null terminate them,
@@ -179,7 +181,7 @@ fn parse_time_with_format(date: StringSlice, format: StringSlice, tzinfo: TimeZo
     return _validate_timestamp(tm, tzinfo)
 
 
-fn parse_time_with_format(date: StringSlice, format: StringSlice, tz: StringSlice) raises -> SmallTime:
+def parse_time_with_format(date: StringSlice, format: StringSlice, tz: StringSlice) raises -> SmallTime:
     """Create a `SmallTime` instance from a date string and format,
     in the style of `datetime.strptime`. Optionally replaces the parsed time_zone.
     Due to cstr pointer creation requiring a mutable reference to `date` and `format` to null terminate them,
@@ -205,7 +207,7 @@ fn parse_time_with_format(date: StringSlice, format: StringSlice, tz: StringSlic
     return parse_time_with_format(date, format, time_zone.from_utc(tz))
 
 
-fn from_ordinal(ordinal: UInt) -> SmallTime:
+def from_ordinal(ordinal: UInt) -> SmallTime:
     """Construct a SmallTime from a proleptic Gregorian ordinal.
 
     Args:
@@ -294,7 +296,7 @@ struct Specification(Equatable, ImplicitlyCopyable, TrivialRegisterPassable):
     """Internal enum value."""
 
     @implicit
-    fn __init__(out self, value: UInt8):
+    def __init__(out self, value: UInt8):
         """Initializes a new Specification instance.
 
         Args:
@@ -315,7 +317,7 @@ struct Specification(Equatable, ImplicitlyCopyable, TrivialRegisterPassable):
     comptime MICROSECONDS = Self(5)
     """Microseconds specification."""
 
-    fn __eq__(self, other: Self) -> Bool:
+    def __eq__(self, other: Self) -> Bool:
         """Check if two specifications are equal.
 
         Args:
@@ -326,7 +328,7 @@ struct Specification(Equatable, ImplicitlyCopyable, TrivialRegisterPassable):
         """
         return self.value == other.value
 
-    fn __ne__(self, other: Self) -> Bool:
+    def __ne__(self, other: Self) -> Bool:
         """Check if two specifications are not equal.
 
         Args:
@@ -358,7 +360,7 @@ struct SmallTime(Equatable, ImplicitlyCopyable, Writable):
     var time_zone: TimeZone
     """Time zone."""
 
-    fn __init__(
+    def __init__(
         out self,
         year: UInt,
         month: UInt8,
@@ -390,7 +392,7 @@ struct SmallTime(Equatable, ImplicitlyCopyable, Writable):
         self.microsecond = microsecond
         self.time_zone = tz
 
-    fn format[template: String = "YYYY-MM-DD HH:mm:ss ZZ"](self) -> String:
+    def format[template: String = "YYYY-MM-DD HH:mm:ss ZZ"](self) -> String:
         """Returns a string representation of the `SmallTime`
         formatted according to the provided format string.
 
@@ -411,7 +413,7 @@ struct SmallTime(Equatable, ImplicitlyCopyable, Writable):
         """
         return format[template](self)
 
-    fn isoformat[specification: Specification = Specification.AUTO](self, separator: String = "T") -> String:
+    def isoformat[specification: Specification = Specification.AUTO](self, separator: String = "T") -> String:
         """Return the time formatted according to ISO.
 
         Parameters:
@@ -481,7 +483,7 @@ struct SmallTime(Equatable, ImplicitlyCopyable, Writable):
         var elements = [date, time]
         return separator.join(elements) + self.time_zone.format()
 
-    fn to_ordinal(self) -> UInt:
+    def to_ordinal(self) -> UInt:
         """Return proleptic Gregorian ordinal for the year, month and day.
 
         Returns:
@@ -493,7 +495,7 @@ struct SmallTime(Equatable, ImplicitlyCopyable, Writable):
         """
         return ymd_to_ordinal(self.year, UInt8(self.month), UInt8(self.day))
 
-    fn iso_weekday(self) -> UInt16:
+    def iso_weekday(self) -> UInt16:
         """Returns day of the week.
 
         Returns:
@@ -501,7 +503,7 @@ struct SmallTime(Equatable, ImplicitlyCopyable, Writable):
         """
         return UInt16(self.to_ordinal() % 7 or 7)
 
-    fn __repr__(self) -> String:
+    def __repr__(self) -> String:
         """Return the string representation of the `SmallTime` instance.
 
         Returns:
@@ -509,7 +511,7 @@ struct SmallTime(Equatable, ImplicitlyCopyable, Writable):
         """
         return String.write(self)
 
-    fn __sub__(self, other: Self) -> TimeDelta:
+    def __sub__(self, other: Self) -> TimeDelta:
         """Subtract two `SmallTime` instances.
 
         Args:
@@ -524,7 +526,7 @@ struct SmallTime(Equatable, ImplicitlyCopyable, Writable):
         var secs2 = Int(other.second + other.minute * 60 + other.hour * 3600)
         return TimeDelta(days1 - days2, secs1 - secs2, Int(self.microsecond) - Int(other.microsecond))
 
-    fn write_to(self, mut writer: Some[Writer]):
+    def write_to(self, mut writer: Some[Writer]):
         """Writes a representation of the `SmallTime` instance to a writer.
 
         Args:
@@ -532,7 +534,7 @@ struct SmallTime(Equatable, ImplicitlyCopyable, Writable):
         """
         writer.write(self.isoformat())
 
-    fn write_repr_to(self, mut writer: Some[Writer]):
+    def write_repr_to(self, mut writer: Some[Writer]):
         """Writes a representation of the `SmallTime` instance to a writer.
 
         Args:
@@ -540,7 +542,7 @@ struct SmallTime(Equatable, ImplicitlyCopyable, Writable):
         """
 
         @parameter
-        fn write_optional(opt: Optional[String]):
+        def write_optional(opt: Optional[String]):
             if opt:
                 writer.write(repr(opt.value()))
             else:
